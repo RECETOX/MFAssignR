@@ -12,3 +12,4 @@ dependencies:
 - r-devtools
 - r-languageserver
 - radian
+- r-covr
