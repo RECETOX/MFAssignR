@@ -10,5 +10,5 @@ test_that("SNplot works", {
   load("../../data/Raw_Neg_ML.rda")
   head(Raw_Neg_ML)
   Raw_Neg_ML <- dplyr::relocate(Raw_Neg_ML, intensity) |> dplyr::rename(mass = m.z)
-  SNplot(Raw_Neg_ML, 100, 300)
+  SNplot(Raw_Neg_ML, 1, 300, 100, 1000)
 })
