@@ -10,7 +10,10 @@ test_that("KMDNoise works", {
 
 
 test_that("SNplot works", {
-  load("../../data/Raw_Neg_ML.rda")
+  load(system.file("data", "Raw_Neg_ML.rda",
+    package = "MFAssignR",
+    mustWork = TRUE
+  ))
   head(Raw_Neg_ML)
   Raw_Neg_ML <- dplyr::relocate(Raw_Neg_ML, intensity) |> dplyr::rename(mass = m.z)
   SNplot(Raw_Neg_ML, 1, 300, 100, 1000)
