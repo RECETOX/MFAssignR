@@ -7,7 +7,7 @@ s34_isodiff <- 1.995797
 o16_mass <- 15.9949146223
 h2_mass <- 2.01565
 h2o_mass <- 18.01056468
-ch20_mass <- 30.01056468
+ch2o_mass <- 30.01056468
 c13_isodiff <- 1.0033548380
 c13_isodiff_double <- 2.006709676
 #' Assigns all possible MF to each row of input data frame with CHOFIT and formula extension
