@@ -1845,7 +1845,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000
     }
     ##########
 
-    .rs.restartR()
+  #  .rs.restartR()
 
     ##Final Output list
     output <- list(Unambig = Unambig, Ambig = Ambigout, None = unassigned, MSAssign = MZ,
