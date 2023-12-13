@@ -9,6 +9,6 @@ patrick::with_parameters_test_that("MFAssignCHO works", {
   expected <- readRDS(paste0("test-data/mfassignCHO_testData-", mode, ".rda"))
   expect_equal(actual, expected)
 },
-mode = c("neg", "pos"),
+mode = c("neg", "pos")
 )
 
