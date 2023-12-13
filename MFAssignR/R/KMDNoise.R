@@ -150,21 +150,17 @@ KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = 
 #'
 #' @examples
 #' SNplot(df, cut = 1000, mass = 300, window.x = 1, window.y = 10)
-#'
+#' @import ggplot2
 #' @export
-
-
-
 SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) { # plots a data set displaying the SN cut around a specific mass
-
   df <- df[c(2, 1)]
   names(df)[2] <- "mass"
   names(df)[1] <- "Abundance"
   df$Index <- "Bad"
   df$Index <- replace(df$Index, df$Abundance > cut, "Good")
-  SNplot <- ggplot2::ggplot(df, ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) +
-    ggplot2::geom_segment(ggplot2::aes(color = Index), size = 0.65, alpha = 1) +
-    ggplot2::geom_hline(yintercept = cut, linetype = "solid", size = 0.1) +
-    ggplot2::coord_cartesian(xlim = c(mass - window.x, mass + window.x), ylim = c(0, cut * window.y))
+  SNplot <- ggplot(df, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) +
+    geom_segment(aes(color = Index), size = 0.65, alpha = 1) +
+    geom_hline(yintercept = cut, linetype = "solid", size = 0.1) +
+    coord_cartesian(xlim = c(mass - window.x, mass + window.x), ylim = c(0, cut * window.y))
   print(SNplot)
 }

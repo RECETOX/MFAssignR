@@ -21,10 +21,10 @@ Depends: R (>= 3.4.1)
 Imports: dplyr (>= 0.7.6),
          tidyr (>= 0.8.1),
          ggplot2 (>= 3.0.0),
-	 	 colorRamps (>= 2.3)
+	 	     colorRamps (>= 2.3)
 RoxygenNote: 7.1.1
 Suggests: knitr,
     	  rmarkdown
-		  datacomparer (>= 0.1.4)
-		  patrick (>= 0.2.0)
+		    datacomparer (>= 0.1.4)
+		    patrick (>= 0.2.0)
 VignetteBuilder: knitr
