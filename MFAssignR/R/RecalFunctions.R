@@ -63,8 +63,20 @@
 #' @export
 
 
-Recal <- function(df, peaks, isopeaks = "none", mode, SN = 0, mzRange = 30, series1 = NA, series2 = NA, series3 = NA, series4 = NA, series5 = NA,
-                  series6 = NA, series7 = NA, series8 = NA, series9 = NA, series10 = NA, step_O = 3, step_H2 = 5, CalPeak = 150) {
+Recal <- function(df,
+                  peaks,
+                  isopeaks = "none",
+                  mode,
+                  SN = 0,
+                  mzRange = 30,
+                  series1 = NA, series2 = NA,
+                  series3 = NA, series4 = NA,
+                  series5 = NA, series6 = NA,
+                  series7 = NA, series8 = NA,
+                  series9 = NA, series10 = NA,
+                  step_O = 3,
+                  step_H2 = 5,
+                  CalPeak = 150) {
   cols <- ncol(peaks)
   min <- round(min(peaks[1]))
   max <- round(max(peaks[1]))
