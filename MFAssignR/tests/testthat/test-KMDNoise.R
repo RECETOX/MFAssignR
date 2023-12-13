@@ -14,7 +14,6 @@ test_that("SNplot works", {
     package = "MFAssignR",
     mustWork = TRUE
   ))
-  head(Raw_Neg_ML)
   Raw_Neg_ML <- dplyr::relocate(Raw_Neg_ML, intensity) |> dplyr::rename(mass = m.z)
   SNplot(Raw_Neg_ML, 1, 300, 100, 1000)
 })
