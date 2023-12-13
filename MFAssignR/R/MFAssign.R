@@ -192,8 +192,6 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, P
                           "I","M", "NH4", "POE", "NOE", "Z"))
 
   numComps <- length(components)
-#  proton = 1.00727645216 # mass of proton
-#  electron =  0.000548597 # mass of electron
   fitMode <- "ppm"
   maxErr <- ppm_err
   numDigits <- 6
