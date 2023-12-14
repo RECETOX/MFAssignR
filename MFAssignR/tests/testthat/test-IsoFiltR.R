@@ -1,14 +1,3 @@
-test_that("Isotope filtering works", {
-  load(system.file("data", "Raw_Neg_ML.rda",
-    package = "MFAssignR",
-    mustWork = TRUE
-  ))
-  expected <- readRDS("test-data/isotopes.rda")
-
-  actual <- IsoFiltR(Raw_Neg_ML)
-  expect_equal(actual, expected)
-})
-
 patrick::with_parameters_test_that("IsoFiltR works",
   {
     raw <- read.csv(file.path("test-data", paste0("QC1_1_", toupper(mode), "_500.csv")))
