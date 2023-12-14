@@ -122,149 +122,97 @@ CompIntToFactor <- function(x) {
   # output: factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
   # "Cl37", "M", "NH4", "POE", "NOE", "Z"}
   y <- NA
+  levels <- c(
+    "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
+    "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )
   switch(x,
     {
-      y <- factor("C",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
-      )
+      y <- factor("C", levels = levels)
     },
     {
       y <- factor("H",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("O",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("N",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("S",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("P",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("E",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("S34",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("N15",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("D",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Cl",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Fl",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Cl37",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("M",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("NH4",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("POE",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("NOE",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Z",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
@@ -274,91 +222,6 @@ CompIntToFactor <- function(x) {
   return(y)
 }
 
-
-#' Nominal masses of components
-#'
-#' Returns the nominal masses of molecular components, using zero for charge
-#'
-#' This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#'  environment.
-#'
-#' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"})
-#'
-#' @return numeric; value of nominal mass
-#'
-#' @examples
-#' EM("C")
-#'
-#' EM("C")
-#'
-#' @export
-#'
-NM <- function(x) {
-  # NM - nominal masses of components, using zero for charge
-  # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-  # output: numeric
-  y <- 0
-  switch(as.character(x),
-    "C" = {
-      y <- 12
-    },
-    "H" = {
-      y <- 1
-    },
-    "O" = {
-      y <- 16
-    },
-    "N" = {
-      y <- 15
-    },
-    "S" = {
-      y <- 32
-    },
-    "P" = {
-      y <- 32
-    },
-    "E" = {
-      y <- 1
-    },
-    "S34" = {
-      y <- 34
-    },
-    "N15" = {
-      y <- 16
-    },
-    "D" = {
-      y <- 1
-    },
-    "Cl" = {
-      y <- 35
-    },
-    "Fl" = {
-      y <- 19
-    },
-    "POE" = {
-      y <- 1
-    },
-    "NOE" = {
-      y <- (-1)
-    },
-    "Cl37" = {
-      y <- 37
-    },
-    "M" = {
-      y <- 22
-    },
-    "NH4" = {
-      y <- 17
-    },
-    "Z" = {
-      y <- 0
-    },
-    {
-      stop("NM called on undefined component ")
-    }
-  )
-  return(y)
-}
 
 
 #' Expected masses of components
@@ -639,271 +502,6 @@ MaxMoles <- function(x) {
   )
   return(y)
 }
-
-
-
-#' Minimum limit of moles (user limit)
-#'
-#' Returns the minimum limit of moles used by the
-#'   \code{\link{MFAssign}} function, specified by the user.
-#'
-#'   This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#'  environment.
-#'
-#' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"})
-#'
-#' @return numeric; value of minimum limit of moles
-#'
-#' @examples
-#' LowMoles("C")
-#'
-#' LowMoles("C")
-#'
-#' @export
-#'
-LowMoles <- function(x) {
-  # LowMoles - user suplied limit on minimum moles
-  # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-  # output: numeric
-  y <- 0
-  switch(as.character(x),
-    "C" = {
-      y <- 1
-    },
-    "H" = {
-      y <- 2
-    },
-    "O" = {
-      y <- 0
-    },
-    "N" = {
-      y <- 0
-    },
-    "S" = {
-      y <- 0
-    },
-    "P" = {
-      y <- 0
-    },
-    "M" = {
-      y <- 0
-    },
-    "E" = {
-      y <- 0
-    },
-    "Z" = {
-      y <- 1
-    },
-    "Cl" = {
-      y <- 0
-    },
-    "Fl" = {
-      y <- 0
-    },
-    "POE" = {
-      y <- 0
-    },
-    "NOE" = {
-      y <- 0
-    },
-    "N15" = {
-      y <- 0
-    },
-    "D" = {
-      y <- 0
-    },
-    "NH4" = {
-      y <- 0
-    },
-    "Cl37" = {
-      y <- 0
-    },
-    "S34" = {
-      y <- 0
-    },
-    {
-      stop("LowMoles called on undefined component ")
-    }
-  )
-  return(y)
-}
-
-
-
-
-#' Maximum limit of moles (user limit)
-#'
-#' Returns the maximum limit of moles used by the
-#'   \code{\link{MFAssign}} function, specified by the user.
-#'
-#'  This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#'  environment.
-#'
-#' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"})
-#'
-#' @return numeric; value of maximum limit of moles
-#'
-#' @examples
-#' HighMoles("C")
-#'
-#' HighMoles("C")
-#'
-#' @export
-#'
-HighMoles <- function(x, N = 0, S = 0, P = 0, Cl = 0, Fl = 0, POE = 0, NOE = 0, E = 0, S34 = 0, Cl37 = 0,
-                      N15 = 0, D = 0, M = 0, NH4 = 0, Z = 1) {
-  # max_moles - user suplied limit on maximum moles
-  # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-  # output: numeric
-  y <- 0
-  switch(as.character(x),
-    "C" = {
-      y <- 100
-    },
-    "H" = {
-      y <- 202
-    },
-    "O" = {
-      y <- 60
-    },
-    "N" = {
-      y <- N
-    },
-    "S" = {
-      y <- S
-    },
-    "P" = {
-      y <- P
-    },
-    "M" = {
-      y <- M
-    },
-    "E" = {
-      y <- E
-    },
-    "Z" = {
-      y <- Z
-    },
-    "Cl" = {
-      y <- Cl
-    },
-    "Fl" = {
-      y <- Fl
-    },
-    "POE" = {
-      y <- POE
-    },
-    "NOE" = {
-      y <- NOE
-    },
-    "N15" = {
-      y <- N15
-    },
-    "D" = {
-      y <- D
-    },
-    "NH4" = {
-      y <- NH4
-    },
-    "Cl37" = {
-      y <- Cl37
-    },
-    "S34" = {
-      y <- S34
-    },
-    {
-      stop("HighMoles called on undefined component ")
-    }
-  )
-  return(y)
-}
-
-#' Valence of component
-#'
-#' Returns the valence of the specified component; used by the
-#'   \code{\link{MFAssign}} function.
-#'  This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#'  environment.
-#'
-#'
-#' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"})
-#'
-#' @return numeric; value of valence
-#'
-#' @examples
-#' Valence("C")
-#'
-#' Valence("C")
-#'
-#' @export
-#'
-Valence <- function(x) {
-  # Valence - valences of the components
-  # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-  # output: numeric
-  y <- 0
-  switch(as.character(x),
-    "C" = {
-      y <- 4
-    },
-    "H" = {
-      y <- 1
-    },
-    "O" = {
-      y <- 2
-    },
-    "N" = {
-      y <- 3
-    },
-    "S" = {
-      y <- 6
-    },
-    "P" = {
-      y <- 5
-    },
-    "M" = {
-      y <- 0
-    },
-    "E" = {
-      y <- 0
-    },
-    "Z" = {
-      y <- 0
-    },
-    "Cl" = {
-      y <- 1
-    },
-    "Fl" = {
-      y <- 1
-    },
-    "POE" = {
-      y <- 0
-    },
-    "NOE" = {
-      y <- 0
-    },
-    "N15" = {
-      y <- 3
-    },
-    "D" = {
-      y <- 1
-    },
-    "NH4" = {
-      y <- 0
-    },
-    "Cl37" = {
-      y <- 1
-    },
-    "S34" = {
-      y <- 6
-    },
-    {
-      stop("Valence called on undefined component ")
-    }
-  )
-  return(y)
-}
-
 
 # ----------------------------------------------------------------------------
 # Utility funcitons

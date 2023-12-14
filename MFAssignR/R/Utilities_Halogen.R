@@ -326,7 +326,7 @@ CompIntToFactor2 <- function(x) {
 #'
 #' @export
 #'
-NM2 <- function(x) {
+NM <- function(x) {
   # NM - nominal masses of components, using zero for charge
   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
   # output: numeric
@@ -541,102 +541,6 @@ EM2 <- function(x) {
   return(y)
 }
 
-# mass <- 18.998403+1.0078250319
-#'
-#' #' Minimum limit of moles (program limit)
-#' #'
-#' #' Returns the minimum limit of moles used by the
-#' #'   \code{\link{MFAssign}} function.
-#' #'
-#' #'   This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#' #'  environment.
-#' #'
-#' #' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"})
-#' #'
-#' #' @return numeric; value of minimum limit of moles
-#' #'
-#' #' @examples
-#' #' MinMoles("C")
-#' #'
-#' #' MinMoles('C')
-#' #'
-#' #' @export
-#' #'
-#' MinMoles2 <- function(x) {
-#'   # MinMoles - program defined minimum moles of components,
-#'   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-#'   # output: numeric
-#'   y <- 0
-#'   switch(as.character(x),
-#'          "C"  = {y <- 1},
-#'          "H"  = {y <-  2},
-#'          "O"  = {y <- 0},
-#'          "N"  = {y <- 0},
-#'          "S"  = {y <- 0},
-#'          "P"  = {y <- 0},
-#'          "M"  = {y <- 0},
-#'          "E"  = {y <- 0},
-#'          "Z"  = {y <- 1},
-#'          "Cl" = {y <- 0},
-#'          "Fl" = {y <- 0},
-#'          "POE" = {y <- 0},
-#'          "NOE" = {y <- 0},
-#'          "Cl37" = {y <- 0},
-#'          "S34" = {y <- 0},
-#'          "C13" = {y <- 0},
-#'          "Br" = {y <- 0},
-#'          "Br81" = {y <- 0},
-#'          "I"  = {y <- 0},
-#'          { stop("MinMoles called on undefined component ") })
-#'   return(y)
-#' }
-#'
-#' #' Maximum limit of moles (program limit)
-#' #'
-#' #' Returns the maximum limit of moles used by the
-#' #'   \code{\link{MFAssign}} function.
-#' #'
-#' #'   This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
-#' #'  environment.
-#' #'
-#' #' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "M", "E", "Z"})
-#' #'
-#' #' @return numeric; value of maximum limit of moles
-#' #'
-#' #' @examples
-#' #' MaxMoles("C")
-#' #'
-#' #' MaxMoles('C')
-#' #'
-#' #' @export
-#' #'
-#' MaxMoles2 <- function(x) {
-#'   # MaxMoles - program maximum limit of moles
-#'   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
-#'   # output: numeric
-#'   y <- 0
-#'   switch(as.character(x),
-#'          "C"  = {y <- 166},
-#'          "H"  = {y <- 284},
-#'          "O"  = {y <-  72},
-#'          "N"  = {y <-   24},
-#'          "S"  = {y <-   8},
-#'          "P"  = {y <-   5},
-#'          "M"  = {y <-   2},
-#'          "E"  = {y <-   3},
-#'          "Z"  = {y <-   5},
-#'          "Cl" = {y <-   5},
-#'          "Fl" = {y <-   5},
-#'          "POE" = {y <-   1},
-#'          "NOE" = {y <-   1},
-#'          "Cl37" = {y <- 3},
-#'          "S34" = {y <-  3},
-#'          { stop("MaxMoles called on undefined component ") })
-#'   return(y)
-#' }
-#'
-
-
 #' Minimum limit of moles (user limit)
 #'
 #' Returns the minimum limit of moles used by the
@@ -656,7 +560,7 @@ EM2 <- function(x) {
 #'
 #' @export
 #'
-LowMoles2 <- function(x) {
+LowMoles <- function(x) {
   # LowMoles - user suplied limit on minimum moles
   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
   # output: numeric
@@ -754,7 +658,7 @@ LowMoles2 <- function(x) {
 #'
 #' @export
 #'
-HighMoles2 <- function(x, N = 0, S = 0, P = 0, Cl = 0, Fl = 0, POE = 0, NOE = 0, E = 0, S34 = 0, Cl37 = 0,
+HighMoles <- function(x, N = 0, S = 0, P = 0, Cl = 0, Fl = 0, POE = 0, NOE = 0, E = 0, S34 = 0, Cl37 = 0,
                        N15 = 0, D = 0, Br = 0, Br81 = 0, I = 0, M = 0, NH4 = 0, Z = 1) {
   # max_moles - user suplied limit on maximum moles
   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
@@ -850,7 +754,7 @@ HighMoles2 <- function(x, N = 0, S = 0, P = 0, Cl = 0, Fl = 0, POE = 0, NOE = 0,
 #'
 #' @export
 #'
-Valence2 <- function(x) {
+Valence <- function(x) {
   # Valence - valences of the components
   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
   # output: numeric
@@ -927,29 +831,6 @@ Valence2 <- function(x) {
 }
 
 
-# ----------------------------------------------------------------------------
-# Utility funcitons
-# ----------------------------------------------------------------------------
-
-#' Even integer
-#'
-#' Returns Boolean if number is Even
-#'
-#' @param x numeric
-#'
-#' @return Boolean
-#'
-#' @examples
-#' Even(123)
-#'
-#' Even(12)
-#'
-#' @export
-#'
-Even <- function(x) {
-  # even - function to test whether an integer is even or odd
-  (round(x) %% 2) == 0
-}
 
 #' Determine if molecular formula is valid
 #'
