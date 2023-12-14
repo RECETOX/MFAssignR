@@ -131,173 +131,114 @@ CompIntToFactor2 <- function(x) {
   # output: factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
   # "Cl37", "M", "NH4", "POE", "NOE", "Z"}
   y <- NA
+  levels <- c(
+    "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
+    "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
+  )
   switch(x,
     {
       y <- factor("C",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("H",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("O",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("N",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("S",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("P",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("E",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("S34",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("N15",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("D",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Cl",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Fl",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Cl37",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Br",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Br81",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("I",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("M",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("NH4",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("POE",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("NOE",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
       y <- factor("Z",
-        levels = c(
-          "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
-          "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-        )
+        levels = levels
       )
     },
     {
@@ -659,7 +600,7 @@ LowMoles <- function(x) {
 #' @export
 #'
 HighMoles <- function(x, N = 0, S = 0, P = 0, Cl = 0, Fl = 0, POE = 0, NOE = 0, E = 0, S34 = 0, Cl37 = 0,
-                       N15 = 0, D = 0, Br = 0, Br81 = 0, I = 0, M = 0, NH4 = 0, Z = 1) {
+                      N15 = 0, D = 0, Br = 0, Br81 = 0, I = 0, M = 0, NH4 = 0, Z = 1) {
   # max_moles - user suplied limit on maximum moles
   # input:  factor {"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Cl37", "M", "NH4", "Z"}
   # output: numeric
