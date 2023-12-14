@@ -13,3 +13,4 @@ dependencies:
 - r-languageserver
 - radian
 - r-covr
+- r-patrick
