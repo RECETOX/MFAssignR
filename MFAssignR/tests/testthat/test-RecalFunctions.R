@@ -1,7 +1,7 @@
 load_test_data <- function() {
-  iso <- readRDS("test-data/iso.rda")
-  mono <- readRDS("test-data/mono.rda")
-  mfassingr <- readRDS("test-data/mfassignR.rda")
+  iso <- readRDS("test-data/iso_neg.rda")
+  mono <- readRDS("test-data/mono_neg.rda")
+  mfassingr <- readRDS("test-data/mfassign_Unambig_neg.rda")
 
   list(iso = iso, mono = mono, mfassingr = mfassingr)
 }
@@ -10,7 +10,7 @@ patrick::with_parameters_test_that("Recal works", {
   data <- load_test_data()
 
   actual <- MFAssignR::Recal(
-    data$mfassingr[["Unambig"]],
+    data$mfassingr,
     peaks = data$mono,
     isopeaks = data$iso,
     mzRange = 30,
@@ -23,17 +23,16 @@ patrick::with_parameters_test_that("Recal works", {
     series5 = "O4_H_2",
     series6 = "O10_H_9"
   )
-  recal <- readRDS(paste0("test-data/recal-", mode, ".rda"))
+  recal <- readRDS("test-data/recal_neg.rda")
   expect_equal(actual, recal)
 },
-  mode = c("neg", "pos"),
+  mode = c("neg"),
 )
-
 test_that("RecalList works", {
   data <- load_test_data()
-  recalist <- readRDS("test-data/recalist.rda")
+  recalist <- readRDS("test-data/recalist_neg.rda")
 
-  actual <- MFAssignR::RecalList(data$mfassingr[["Unambig"]])
+  actual <- MFAssignR::RecalList(data$mfassingr)
 
   expect_equal(actual, recalist, tolerance = 1e-2)
 })

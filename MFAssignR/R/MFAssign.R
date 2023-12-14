@@ -1,3 +1,15 @@
+ch2_mass <- 14.01565
+M_NH4 <- 18.033823 # M+NH4 (for ref. see https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/)
+M_Na <- 22.989221 # is either this: https://www.chem.ualberta.ca/~massspec/ion_mass.pdf or should be 22.989218 based on resource above
+proton <- 1.00727645216
+electron <- 0.000548597
+s34_isodiff <- 1.995797
+o16_mass <- 15.9949146223
+h2_mass <- 2.01565
+h2o_mass <- 18.01056468
+ch2o_mass <- 30.01056468
+c13_isodiff <- 1.0033548380
+c13_isodiff_double <- 2.006709676
 #' Assigns all possible MF to each row of input data frame with CHOFIT and formula extension
 #'
 #' MFAssign assigns all possible molecular formulae to each
@@ -180,8 +192,6 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, P
                           "I","M", "NH4", "POE", "NOE", "Z"))
 
   numComps <- length(components)
-  proton = 1.00727645216
-  electron =  0.000548597
   fitMode <- "ppm"
   maxErr <- ppm_err
   numDigits <- 6
@@ -239,7 +249,7 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, P
 
   ################################# Inital Kendrick Series implementation
   if(MSMS == "off"){
-    peaks$KM <- peaks$mass* (14/14.01565)
+    peaks$KM <- peaks$mass* (14/ch2_mass)
 
     peaks$KMD <- ifelse(abs(floor(peaks$mass)-peaks$mass) >= min_def & abs(floor(peaks$mass)-peaks$mass) <= max_def,
     peaks$KMD <- floor(peaks$mass)-peaks$KM, peaks$KMD <- round(peaks$mass)-peaks$KM) #New 1/6/20
@@ -263,7 +273,7 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, P
 
     peaks <- data.frame(RA = peaks[1], mass = peaks[2])
   }else{
-    peaks$KM <- peaks$mass* (14/14.01565)
+    peaks$KM <- peaks$mass* (14/ch2_mass)
     peaks$KMD <- ifelse(abs(floor(peaks$mass)-peaks$mass) >= min_def & abs(floor(peaks$mass)-peaks$mass) <= max_def,
                         peaks$KMD <- floor(peaks$mass)-peaks$KM, peaks$KMD <- round(peaks$mass)-peaks$KM) #New 1/6/20
 
@@ -572,22 +582,22 @@ records <- vector("list")
   records1$mode <- ionMode
 
   df1 <- records1[records1$mode == "pos" & records1$M > 0 & records1$POE == 0 & records1$NH4 == 0,]
-  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
+  df1$Neutral_mass <- df1$Exp_mass - df1$M * M_Na
 
   df1x <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 1,]
-  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
+  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * M_NH4
 
   df2 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0& records1$NH4 == 0,]
-  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
+  df2$Neutral_mass <- df2$Exp_mass - proton
 
   df3 <- records1[records1$mode == "neg" & records1$NOE == 0,]
-  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
+  df3$Neutral_mass <- df3$Exp_mass + proton
 
   df4 <- records1[records1$mode == "neg" & records1$NOE == 1,]
-  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
+  df4$Neutral_mass <- df4$Exp_mass - electron
 
   df5 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 1& records1$NH4 == 0,]
-  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
+  df5$Neutral_mass <- df5$Exp_mass + electron
 
   records1 <- rbind(df1, df1x, df2, df3, df4, df5)
 
@@ -615,7 +625,7 @@ records <- vector("list")
 
                             #NM = floor(Exp_mass),
 
-                            KM = Exp_mass * (14 / 14.01565), #KMD = NM - KM,
+                            KM = Exp_mass * (14 / ch2_mass), #KMD = NM - KM,
 
                             max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + O + E + S34 + P + Cl +Fl+Cl37+N15
                                                                     +Br + Br81 + I) ,
@@ -706,7 +716,7 @@ records <- vector("list")
     names(Sulf)[1] <- "Exp_mass"
     names(Sulf)[2] <- "Iso_mass"
 
-    Sulf$S_mass <- Sulf$Exp_mass + 1.995797   ##New as of 6/19/2019
+    Sulf$S_mass <- Sulf$Exp_mass + s34_isodiff   ##New as of 6/19/2019
     Sulf$err <- ((Sulf$S_mass - Sulf$Iso_mass)/Sulf$S_mass) * 10^6   ##New as of 6/19/2019
 
     Sulf <- Sulf[abs(Sulf$err) < iso_err,]   ##New as of 6/19/2019
@@ -779,34 +789,34 @@ records <- vector("list")
 
   Unambig$NM <- floor(Unambig$Exp_mass)
 
-  Unambig$KM_CH2 <- Unambig$Exp_mass * (14/14.01565)
+  Unambig$KM_CH2 <- Unambig$Exp_mass * (14/ch2_mass)
   Unambig$KMD_CH2 <- round(Unambig$NM - Unambig$KM_CH2, 3)
   ###
   Unambig$z_CH2 <- ifelse(abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) <= max_def,
                         Unambig$z_CH2 <- floor(Unambig$Exp_mass)%%14 - 14, Unambig$z_CH2 <- round(Unambig$Exp_mass)%%14 - 14) #New 1/6/20
   ###
-  Unambig$KM_O <- Unambig$Exp_mass * (16/15.9949146223)
+  Unambig$KM_O <- Unambig$Exp_mass * (16/o16_mass)
   Unambig$KMD_O <- round(Unambig$NM - Unambig$KM_O, 3)
   ###
   Unambig$z_O <- ifelse(abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) <= max_def,
                           Unambig$z_O <- floor(Unambig$Exp_mass)%%16 - 16, Unambig$z_O <- round(Unambig$Exp_mass)%%16 - 16) #New 1/6/20
   ###
 
-  Unambig$KM_H2 <- Unambig$Exp_mass * (2/2.01565)
+  Unambig$KM_H2 <- Unambig$Exp_mass * (2/h2_mass)
   Unambig$KMD_H2 <- round(Unambig$NM - Unambig$KM_H2, 3)
   ###
   Unambig$z_H2 <- ifelse(abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) <= max_def,
                           Unambig$z_H2 <- floor(Unambig$Exp_mass)%%2 - 2, Unambig$z_H2 <- round(Unambig$Exp_mass)%%2 - 2) #New 1/6/20
   ###
 
-  Unambig$KM_H2O <- Unambig$Exp_mass * (18/18.01056468)
+  Unambig$KM_H2O <- Unambig$Exp_mass * (18/h2o_mass)
   Unambig$KMD_H2O <- round(Unambig$NM - Unambig$KM_H2O, 3)
   ###
   Unambig$z_H2O <- ifelse(abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) <= max_def,
                           Unambig$z_H2O <- floor(Unambig$Exp_mass)%%18 - 18, Unambig$z_H2O <- round(Unambig$Exp_mass)%%18 - 18) #New 1/6/20
   ###
 
-  Unambig$KM_CH2O <- Unambig$Exp_mass * (30/30.01056468)
+  Unambig$KM_CH2O <- Unambig$Exp_mass * (30/ch2o_mass)
   Unambig$KMD_CH2O <- round(Unambig$NM - Unambig$KM_CH2O, 3)
   ###
   Unambig$z_CH2O <- ifelse(abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass)-Unambig$Exp_mass) <= max_def,
@@ -821,35 +831,35 @@ records <- vector("list")
                        Ambig$NM <- floor(Ambig$Exp_mass), Ambig$NM <- round(Ambig$Exp_mass)) #New 1/6/20
   ####
 
-  Ambig$KM_CH2 <- Ambig$Exp_mass * (14/14.01565)
+  Ambig$KM_CH2 <- Ambig$Exp_mass * (14/ch2_mass)
   Ambig$KMD_CH2 <- round(Ambig$NM - Ambig$KM_CH2, 3)
   ###
   Ambig$z_CH2 <- ifelse(abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) >= min_def & abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) <= max_def,
                           Ambig$z_CH2 <- floor(Ambig$Exp_mass)%%14 - 14, Ambig$z_CH2 <- round(Ambig$Exp_mass)%%14 - 14) #New 1/6/20
   ###
 
-  Ambig$KM_O <- Ambig$Exp_mass * (16/15.9949146223)
+  Ambig$KM_O <- Ambig$Exp_mass * (16/o16_mass)
   Ambig$KMD_O <- round(Ambig$NM - Ambig$KM_O, 3)
   ###
   Ambig$z_O <- ifelse(abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) >= min_def & abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) <= max_def,
                         Ambig$z_O <- floor(Ambig$Exp_mass)%%16 - 16, Ambig$z_O <- round(Ambig$Exp_mass)%%16 - 16) #New 1/6/20
   ###
 
-  Ambig$KM_H2 <- Ambig$Exp_mass * (2/2.01565)
+  Ambig$KM_H2 <- Ambig$Exp_mass * (2/h2_mass)
   Ambig$KMD_H2 <- round(Ambig$NM - Ambig$KM_H2, 3)
   ###
   Ambig$z_H2 <- ifelse(abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) >= min_def & abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) <= max_def,
                          Ambig$z_H2 <- floor(Ambig$Exp_mass)%%2 - 2, Ambig$z_H2 <- round(Ambig$Exp_mass)%%2 - 2) #New 1/6/20
   ###
 
-  Ambig$KM_H2O <- Ambig$Exp_mass * (18/18.01056468)
+  Ambig$KM_H2O <- Ambig$Exp_mass * (18/h2o_mass)
   Ambig$KMD_H2O <- round(Ambig$NM - Ambig$KM_H2O, 3)
   ###
   Ambig$z_H2O <- ifelse(abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) >= min_def & abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) <= max_def,
                           Ambig$z_H2O <- floor(Ambig$Exp_mass)%%18 - 18, Ambig$z_H2O <- round(Ambig$Exp_mass)%%18 - 18) #New 1/6/20
   ###
 
-  Ambig$KM_CH2O <- Ambig$Exp_mass * (30/30.01056468)
+  Ambig$KM_CH2O <- Ambig$Exp_mass * (30/ch2o_mass)
   Ambig$KMD_CH2O <- round(Ambig$NM - Ambig$KM_CH2O, 3)
   ###
   Ambig$z_CH2O <- ifelse(abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) >= min_def & abs(floor(Ambig$Exp_mass)-Ambig$Exp_mass) <= max_def,
@@ -929,7 +939,7 @@ records <- vector("list")
                             "M", "NH4", "POE", "NOE", "Z")]
         names(knownCH2)[2] <- "base_mass"
         Step1 <- merge(unknown, knownCH2, by.x = c("KMD_CH2", "z_CH2"), by.y = c("KMD_CH2", "z_CH2"))
-        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass))/14.01565)
+        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass))/ch2_mass)
         Step1$C <- Step1$C + Step1$CH2_num
         Step1$H <- Step1$H + 2 * Step1$CH2_num
         Step1$Type <- "CH2"
@@ -944,7 +954,7 @@ records <- vector("list")
                           "S34", "N15", "D", "Cl", "Fl", "Cl37","Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownO)[2] <- "base_mass"
         Step2 <- merge(unknown, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass))/15.9949146223)
+        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass))/o16_mass)
         Step2$O <- Step2$O + Step2$O_num
         Step2$Type <- "O"
         Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
@@ -957,7 +967,7 @@ records <- vector("list")
                            "S34", "N15", "D", "Cl", "Fl", "Cl37","Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownH2)[2] <- "base_mass"
         Step3 <- merge(unknown, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass))/2.01565)
+        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass))/h2_mass)
         Step3$H <- Step3$H + 2*Step3$H2_num
         Step3$Type <- "H2"
         Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
@@ -970,7 +980,7 @@ records <- vector("list")
                             "S34", "N15", "D", "Cl", "Fl", "Cl37","Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownH2O)[2] <- "base_mass"
         Step4 <- merge(unknown, knownH2O, by.x = c("KMD_H2O", "z_H2O"), by.y = c("KMD_H2O", "z_H2O"))
-        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass))/18.01056468)
+        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass))/h2o_mass)
         Step4$H <- Step4$H + 2*Step4$H2O_num
         Step4$O <- Step4$O + Step4$H2O_num
         Step4$Type <- "H2O"
@@ -984,7 +994,7 @@ records <- vector("list")
                              "S34", "N15", "D", "Cl", "Fl", "Cl37","Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownCH2O)[2] <- "base_mass"
         Step5 <- merge(unknown, knownCH2O, by.x = c("KMD_CH2O", "z_CH2O"), by.y = c("KMD_CH2O", "z_CH2O"))
-        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass))/30.01056468)
+        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass))/ch2o_mass)
         Step5$H <- Step5$H + 2*Step5$CH2O_num
         Step5$O <- Step5$O + Step5$CH2O_num
         Step5$C <- Step5$C + Step5$CH2O_num
@@ -1050,22 +1060,22 @@ records <- vector("list")
 
 
   df1 <- records1[records1$mode == "pos" & records1$M > 0 & records1$POE == 0 & records1$NH4 == 0,]
-  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
+  df1$Neutral_mass <- df1$Exp_mass - df1$M * M_Na
 
   df1x <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 1,]
-  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
+  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * M_NH4
 
   df2 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0& records1$NH4 == 0,]
-  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
+  df2$Neutral_mass <- df2$Exp_mass - proton
 
   df3 <- records1[records1$mode == "neg" & records1$NOE == 0,]
-  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
+  df3$Neutral_mass <- df3$Exp_mass + proton
 
   df4 <- records1[records1$mode == "neg" & records1$NOE == 1,]
-  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
+  df4$Neutral_mass <- df4$Exp_mass - electron
 
   df5 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 1& records1$NH4 == 0,]
-  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
+  df5$Neutral_mass <- df5$Exp_mass + electron
 
   records1 <- rbind(df1, df1x, df2, df3, df4, df5)
 
@@ -1102,7 +1112,7 @@ records <- vector("list")
 
                             #NM = floor(Exp_mass),
 
-                            KM = Exp_mass * (14 / 14.01565), #KMD = NM - KM,
+                            KM = Exp_mass * (14 / ch2_mass), #KMD = NM - KM,
 
                             max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + Fl + O + E + S34 + P +
                                                                       Cl +Cl37+N15 + Br + Br81 + I) ,
@@ -1274,7 +1284,7 @@ records <- vector("list")
 
   ##Aligning Isotope masses back into the mass spectrum
   ##Align single C13 masses
-  records1$C13_mass <- records1$Exp_mass + 1.0033548380
+  records1$C13_mass <- records1$Exp_mass + c13_isodiff
   err <- iso_err*10^-6
   #The following line was changed for isotoping
   C13Iso <- isopeaks2[isopeaks2$Tag == "C13"|isopeaks2$Tag == "C13_S34",]
@@ -1287,7 +1297,7 @@ records <- vector("list")
            C13Iso[which.min(abs(C13Iso$C13_mass - x)), "C13_mass"], 0)
   })
   ## New as of 12/13/19
-  records1$C13_mass_2 <- records1$theor_mass1 + 1.0033548380
+  records1$C13_mass_2 <- records1$theor_mass1 + c13_isodiff
   err <- iso_err*10^-6
   #The following line was changed for isotoping
   C13Iso <- isopeaks2[isopeaks2$Tag == "C13"|isopeaks2$Tag == "C13_S34",]
@@ -1327,7 +1337,7 @@ records <- vector("list")
   records1 <- records1[-45]  ##CHECK
   #########
   #Align double C13 masses
-  records1$C13_mass2 <- records1$Exp_mass + 2.006709676
+  records1$C13_mass2 <- records1$Exp_mass + c13_isodiff_double
   err <- iso_err*10^-6
   #The following line was changed for isotoping
   C13Iso2 <- isopeaks2[isopeaks2$Tag == "2C13"| isopeaks2$Tag == "2C13_S34",]
@@ -1341,7 +1351,7 @@ records <- vector("list")
   })
 
   ## New as of 12/13/19
-  records1$C13_mass2_2 <- records1$theor_mass1 + 2* 1.0033548380
+  records1$C13_mass2_2 <- records1$theor_mass1 + 2* c13_isodiff
   err <- iso_err*10^-6
 
   #The following line was changed for isotoping
@@ -1396,7 +1406,7 @@ records <- vector("list")
     recordsrest <- rbind(recordsrest, recordsdummy)
     recordsrest$S34_mass <- 0
     recordsrest$S34_Abund <- 0
-    recordsSulf$S34_mass <- recordsSulf$Exp_mass + 1.995797
+    recordsSulf$S34_mass <- recordsSulf$Exp_mass + s34_isodiff
     err <- iso_err*10^-6
     recordsSulf <- recordsSulf[!is.na(recordsSulf$S),]
 
@@ -1413,7 +1423,7 @@ records <- vector("list")
 
     recordsSulf <- recordsSulf[!is.na(recordsSulf$C),]
     ## New as of 12/13/19
-    recordsSulf$S34_mass_2 <- recordsSulf$theor_mass1 + 1.995797
+    recordsSulf$S34_mass_2 <- recordsSulf$theor_mass1 + s34_isodiff
     err <- iso_err*10^-6
 
     #The following line was changed for isotoping
@@ -1542,35 +1552,35 @@ records <- vector("list")
                        Iso_nomatch$NM <- floor(Iso_nomatch$Exp_mass), Iso_nomatch$NM <- round(Iso_nomatch$Exp_mass)) #New 1/6/20
   ####
 
-  Iso_nomatch$KM_CH2 <- Iso_nomatch$Exp_mass * (14/14.01565)
+  Iso_nomatch$KM_CH2 <- Iso_nomatch$Exp_mass * (14/ch2_mass)
   Iso_nomatch$KMD_CH2 <- round(Iso_nomatch$NM - Iso_nomatch$KM_CH2, 3)
   ###
   Iso_nomatch$z_CH2 <- ifelse(abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) >= min_def & abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) <= max_def,
                           Iso_nomatch$z_CH2 <- floor(Iso_nomatch$Exp_mass)%%14 - 14, Iso_nomatch$z_CH2 <- round(Iso_nomatch$Exp_mass)%%14 - 14) #New 1/6/20
   ###
 
-  Iso_nomatch$KM_O <- Iso_nomatch$Exp_mass * (16/15.9949146223)
+  Iso_nomatch$KM_O <- Iso_nomatch$Exp_mass * (16/o16_mass)
   Iso_nomatch$KMD_O <- round(Iso_nomatch$NM - Iso_nomatch$KM_O, 3)
   ###
   Iso_nomatch$z_O <- ifelse(abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) >= min_def & abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) <= max_def,
                               Iso_nomatch$z_O <- floor(Iso_nomatch$Exp_mass)%%16 - 16, Iso_nomatch$z_O <- round(Iso_nomatch$Exp_mass)%%16 - 16) #New 1/6/20
   ###
 
-  Iso_nomatch$KM_H2 <- Iso_nomatch$Exp_mass * (2/2.01565)
+  Iso_nomatch$KM_H2 <- Iso_nomatch$Exp_mass * (2/h2_mass)
   Iso_nomatch$KMD_H2 <- round(Iso_nomatch$NM - Iso_nomatch$KM_H2, 3)
   ###
   Iso_nomatch$z_H2 <- ifelse(abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) >= min_def & abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) <= max_def,
                               Iso_nomatch$z_H2 <- floor(Iso_nomatch$Exp_mass)%%2 - 2, Iso_nomatch$z_H2 <- round(Iso_nomatch$Exp_mass)%%2 - 2) #New 1/6/20
   ###
 
-  Iso_nomatch$KM_H2O <- Iso_nomatch$Exp_mass * (18/18.01056468)
+  Iso_nomatch$KM_H2O <- Iso_nomatch$Exp_mass * (18/h2o_mass)
   Iso_nomatch$KMD_H2O <- round(Iso_nomatch$NM - Iso_nomatch$KM_H2O, 3)
   ###
   Iso_nomatch$z_H2O <- ifelse(abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) >= min_def & abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) <= max_def,
                              Iso_nomatch$z_H2O <- floor(Iso_nomatch$Exp_mass)%%18 - 18, Iso_nomatch$z_H2O <- round(Iso_nomatch$Exp_mass)%%18 - 18) #New 1/6/20
   ###
 
-  Iso_nomatch$KM_CH2O <- Iso_nomatch$Exp_mass * (30/30.01056468)
+  Iso_nomatch$KM_CH2O <- Iso_nomatch$Exp_mass * (30/ch2o_mass)
   Iso_nomatch$KMD_CH2O <- round(Iso_nomatch$NM - Iso_nomatch$KM_CH2O, 3)
   ###
   Iso_nomatch$z_CH2O <- ifelse(abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) >= min_def & abs(floor(Iso_nomatch$Exp_mass)-Iso_nomatch$Exp_mass) <= max_def,
@@ -1585,35 +1595,35 @@ records <- vector("list")
                            recordsx$NM <- floor(recordsx$Exp_mass), recordsx$NM <- round(recordsx$Exp_mass)) #New 1/6/20
   ####
 
-  recordsx$KM_CH2 <- recordsx$Exp_mass * (14/14.01565)
+  recordsx$KM_CH2 <- recordsx$Exp_mass * (14/ch2_mass)
   recordsx$KMD_CH2 <- round(recordsx$NM - recordsx$KM_CH2, 3)
   ###
   recordsx$z_CH2 <- ifelse(abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) >= min_def & abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) <= max_def,
                               recordsx$z_CH2 <- floor(recordsx$Exp_mass)%%14 - 14, recordsx$z_CH2 <- round(recordsx$Exp_mass)%%14 - 14) #New 1/6/20
   ###
 
-  recordsx$KM_O <- recordsx$Exp_mass * (16/15.9949146223)
+  recordsx$KM_O <- recordsx$Exp_mass * (16/o16_mass)
   recordsx$KMD_O <- round(recordsx$NM - recordsx$KM_O, 3)
   ###
   recordsx$z_O <- ifelse(abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) >= min_def & abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) <= max_def,
                             recordsx$z_O <- floor(recordsx$Exp_mass)%%16 - 16, recordsx$z_O <- round(recordsx$Exp_mass)%%16 - 16) #New 1/6/20
   ###
 
-  recordsx$KM_H2 <- recordsx$Exp_mass * (2/2.01565)
+  recordsx$KM_H2 <- recordsx$Exp_mass * (2/h2_mass)
   recordsx$KMD_H2 <- round(recordsx$NM - recordsx$KM_H2, 3)
   ###
   recordsx$z_H2 <- ifelse(abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) >= min_def & abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) <= max_def,
                              recordsx$z_H2 <- floor(recordsx$Exp_mass)%%2 - 2, recordsx$z_H2 <- round(recordsx$Exp_mass)%%2 - 2) #New 1/6/20
   ###
 
-  recordsx$KM_H2O <- recordsx$Exp_mass * (18/18.01056468)
+  recordsx$KM_H2O <- recordsx$Exp_mass * (18/h2o_mass)
   recordsx$KMD_H2O <- round(recordsx$NM - recordsx$KM_H2O, 3)
   ###
   recordsx$z_H2O <- ifelse(abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) >= min_def & abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) <= max_def,
                               recordsx$z_H2O <- floor(recordsx$Exp_mass)%%18 - 18, recordsx$z_H2O <- round(recordsx$Exp_mass)%%18 - 18) #New 1/6/20
   ###
 
-  recordsx$KM_CH2O <- recordsx$Exp_mass * (30/30.01056468)
+  recordsx$KM_CH2O <- recordsx$Exp_mass * (30/ch2o_mass)
   recordsx$KMD_CH2O <- round(recordsx$NM - recordsx$KM_CH2O, 3)
   ###
   recordsx$z_CH2O <- ifelse(abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) >= min_def & abs(floor(recordsx$Exp_mass)-recordsx$Exp_mass) <= max_def,
@@ -1667,7 +1677,7 @@ records <- vector("list")
                             "S34", "N15", "D", "Cl", "Fl", "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownCH2)[2] <- "base_mass"
         Step1 <- merge(unknown, knownCH2, by.x = c("KMD_CH2", "z_CH2"), by.y = c("KMD_CH2", "z_CH2"))
-        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass))/14.01565)
+        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass))/ch2_mass)
         Step1$C <- Step1$C + Step1$CH2_num
         Step1$H <- Step1$H + 2 * Step1$CH2_num
         Step1$Type <- "CH2"
@@ -1682,7 +1692,7 @@ records <- vector("list")
                           "S34", "N15", "D", "Cl", "Fl", "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownO)[2] <- "base_mass"
         Step2 <- merge(unknown, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass))/15.9949146223)
+        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass))/o16_mass)
         Step2$O <- Step2$O + Step2$O_num
         Step2$Type <- "O"
         Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
@@ -1695,7 +1705,7 @@ records <- vector("list")
                            "S34", "N15", "D", "Cl", "Fl", "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownH2)[2] <- "base_mass"
         Step3 <- merge(unknown, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass))/2.01565)
+        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass))/h2_mass)
         Step3$H <- Step3$H + 2*Step3$H2_num
         Step3$Type <- "H2"
         Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
@@ -1708,7 +1718,7 @@ records <- vector("list")
                             "S34", "N15", "D", "Cl", "Fl", "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownH2O)[2] <- "base_mass"
         Step4 <- merge(unknown, knownH2O, by.x = c("KMD_H2O", "z_H2O"), by.y = c("KMD_H2O", "z_H2O"))
-        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass))/18.01056468)
+        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass))/h2o_mass)
         Step4$H <- Step4$H + 2*Step4$H2O_num
         Step4$O <- Step4$O + Step4$H2O_num
         Step4$Type <- "H2O"
@@ -1722,7 +1732,7 @@ records <- vector("list")
                              "S34", "N15", "D", "Cl", "Fl", "Cl37","Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z")]
         names(knownCH2O)[2] <- "base_mass"
         Step5 <- merge(unknown, knownCH2O, by.x = c("KMD_CH2O", "z_CH2O"), by.y = c("KMD_CH2O", "z_CH2O"))
-        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass))/30.01056468)
+        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass))/ch2o_mass)
         Step5$H <- Step5$H + 2*Step5$CH2O_num
         Step5$O <- Step5$O + Step5$CH2O_num
         Step5$C <- Step5$C + Step5$CH2O_num
@@ -1792,22 +1802,22 @@ records <- vector("list")
 
 
   df1 <- records1X[records1X$mode == "pos" & records1X$M > 0 & records1X$POE == 0 & records1X$NH4 == 0,]
-  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
+  df1$Neutral_mass <- df1$Exp_mass - df1$M * M_Na
 
   df1x <- records1X[records1X$mode == "pos" & records1X$M == 0 & records1X$POE == 0 & records1X$NH4 == 1,]
-  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
+  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * M_NH4
 
   df2 <- records1X[records1X$mode == "pos" & records1X$M == 0 & records1X$POE == 0& records1X$NH4 == 0,]
-  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
+  df2$Neutral_mass <- df2$Exp_mass - proton
 
   df3 <- records1X[records1X$mode == "neg" & records1X$NOE == 0,]
-  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
+  df3$Neutral_mass <- df3$Exp_mass + proton
 
   df4 <- records1X[records1X$mode == "neg" & records1X$NOE == 1,]
-  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
+  df4$Neutral_mass <- df4$Exp_mass - electron
 
   df5 <- records1X[records1X$mode == "pos" & records1X$M == 0 & records1X$POE == 1& records1X$NH4 == 0,]
-  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
+  df5$Neutral_mass <- df5$Exp_mass + electron
 
   records1X <- rbind(df1, df1x, df2, df3, df4, df5)
 
@@ -1847,7 +1857,7 @@ records <- vector("list")
   records1X$NM <- ifelse(abs(floor(records1X$Exp_mass)-records1X$Exp_mass) >= min_def & abs(floor(records1X$Exp_mass)-records1X$Exp_mass) <= max_def,
                          records1X$NM <- floor(records1X$Exp_mass), records1X$NM <- round(records1X$Exp_mass)) #New 1/6/20
 
-  records1X$KM = records1X$Exp_mass * (14 / 14.01565)
+  records1X$KM = records1X$Exp_mass * (14 / ch2_mass)
 
   records1X$KMD <- ifelse(abs(floor(records1X$Exp_mass)-records1X$Exp_mass) >= min_def & abs(floor(records1X$Exp_mass)-records1X$Exp_mass) <= max_def,
                           records1X$KMD <- floor(records1X$Exp_mass)-records1X$KM, records1X$KMD <- round(records1X$Exp_mass)-records1X$KM) #New 1/6/20
@@ -2041,7 +2051,7 @@ records <- vector("list")
   #records1 <- recordssave
   #########C13 Isotope Alignment
  # iso_err = 1
-  records1$Iso_mass <- records1$Exp_mass + 1.0033548380
+  records1$Iso_mass <- records1$Exp_mass + c13_isodiff
   err <- iso_err * 10^-6
   records1$Iso_mass <- sapply(records1$Iso_mass, function(x){
     # First check if the element lies within tolerance limits of any element in df2
@@ -2055,7 +2065,7 @@ records <- vector("list")
   names(C13_2)[1] <- "Iso_mass_2"
   #names(C13_2)[2] <- "Iso_RA_2"  #LCMS
 
-  records1$Iso_mass_2 <- records1$theor_mass1 + 1.0033548380
+  records1$Iso_mass_2 <- records1$theor_mass1 + c13_isodiff
   err <- iso_err * 10^-6
   records1$Iso_mass_2 <- sapply(records1$Iso_mass_2, function(x){
     # First check if the element lies within tolerance limits of any element in df2
@@ -2101,7 +2111,7 @@ records <- vector("list")
   DC13 <- DC13[c(1:3)]
   names(DC13)[3] <- "Tag"
 
-  records1$Iso_mass <- records1$Exp_mass + 2 * 1.0033548380
+  records1$Iso_mass <- records1$Exp_mass + 2 * c13_isodiff
   err <- iso_err * 10^-6
   records1$Iso_mass <- sapply(records1$Iso_mass, function(x){
     # First check if the element lies within tolerance limits of any element in df2
@@ -2114,7 +2124,7 @@ records <- vector("list")
   DC13_2 <- DC13
   names(DC13_2)[1] <- "Iso_mass_2"
   names(DC13_2)[2] <- "Iso_RA_2"
-  records1$Iso_mass_2 <- records1$theor_mass1 + 2* 1.0033548380
+  records1$Iso_mass_2 <- records1$theor_mass1 + 2* c13_isodiff
   err <- iso_err * 10^-6
   records1$Iso_mass_2 <- sapply(records1$Iso_mass_2, function(x){
     # First check if the element lies within tolerance limits of any element in df2
@@ -2182,7 +2192,7 @@ records <- vector("list")
 
     records1K <- records1[records1$S ==0,]
     records1S <- records1[records1$S > 0,]
-    records1S$Iso_mass <- records1S$Exp_mass + 1.995797
+    records1S$Iso_mass <- records1S$Exp_mass + s34_isodiff
     err <- iso_err * 10^-6
     records1S$Iso_mass <- sapply(records1S$Iso_mass, function(x){
       # First check if the element lies within tolerance limits of any element in df2
@@ -2196,7 +2206,7 @@ records <- vector("list")
     names(S34_2)[1] <- "Iso_mass_2"
     names(S34_2)[2] <- "Iso_RA"  #LCMS
 
-    records1S$Iso_mass_2 <- records1S$theor_mass1 + 1.995797
+    records1S$Iso_mass_2 <- records1S$theor_mass1 + s34_isodiff
 
     records1S$Iso_mass_2 <- sapply(records1S$Iso_mass_2, function(x){
       # First check if the element lies within tolerance limits of any element in df2
@@ -2285,6 +2295,7 @@ records <- vector("list")
 
   #############
   ##Nominal Mass Series QA Step
+  # 0.0363855 = magic lysine number
   if(NMScut == "on"){
     NewKMD <- dplyr::group_by(Ambigout, NM)
     NewKMD <- dplyr:: mutate(NewKMD, mDa = format(round((Exp_mass-min(Exp_mass))/0.0363855,2), nsmall = 2))
@@ -2393,9 +2404,9 @@ records <- vector("list")
   ####Fix on 12/12/19, updated 12/13/19
 #Save <- Unambig
   Unambig_C13 <- Unambig
-  Unambig_C13$C13 <-  Unambig_C13$Exp_mass + 1.0033548380
+  Unambig_C13$C13 <-  Unambig_C13$Exp_mass + c13_isodiff
 
-  Unambig_C13$C13_2 <-  Unambig_C13$theor_mass1 + 1.0033548380
+  Unambig_C13$C13_2 <-  Unambig_C13$theor_mass1 + c13_isodiff
 
   Unambig_C13$err <-  round(abs((Unambig_C13$C13_mass- Unambig_C13$C13)/Unambig_C13$C13_mass*10^6),2)
   Unambig_C13$err_2 <-  round(abs((Unambig_C13$C13_mass- Unambig_C13$C13_2)/Unambig_C13$C13_mass*10^6),2)
@@ -2669,7 +2680,7 @@ records <- vector("list")
   }
   ##########
 
-  .rs.restartR()
+  #.rs.restartR()
 
   #Ambigout <- Ambigout[Ambigout$group != "Dummy",]
   ##Final Output list
