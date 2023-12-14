@@ -1,38 +1,53 @@
-load_test_data <- function() {
-  iso <- readRDS("test-data/iso_neg.rda")
-  mono <- readRDS("test-data/mono_neg.rda")
-  mfassingr <- readRDS("test-data/mfassign_Unambig_neg.rda")
-
-  list(iso = iso, mono = mono, mfassingr = mfassingr)
+load_expected <- function(mode) {
+  mono <- readRDS(file.path("test-data", paste0(mode, "_recal_mono.rds")))
+  iso <- readRDS(file.path("test-data", paste0(mode, "_recal_iso.rds")))
+  recallist <- readRDS(file.path("test-data", paste0(mode, "_recal_recallist.rds")))
+  return(list(Mono = mono, Iso = iso, RecalList = recallist))
 }
 
-patrick::with_parameters_test_that("Recal works", {
-  data <- load_test_data()
+update_expected <- function(actual, mode) {
+  saveRDS(actual$Mono, file.path("test-data", paste0(mode, "_recal_mono.rds")))
+  saveRDS(actual$Iso, file.path("test-data", paste0(mode, "_recal_iso.rds")))
+  saveRDS(actual$RecalList, file.path("test-data", paste0(mode, "_recal_recallist.rds")))
+}
 
-  actual <- MFAssignR::Recal(
-    data$mfassingr,
-    peaks = data$mono,
-    isopeaks = data$iso,
-    mzRange = 30,
-    mode = mode,
-    SN = 0,
-    series1 = "O10_H_10",
-    series2 = "O5_H_6",
-    series3 = "O7_H_8",
-    series4 = "O8_H_8",
-    series5 = "O4_H_2",
-    series6 = "O10_H_9"
-  )
-  recal <- readRDS("test-data/recal_neg.rda")
-  expect_equal(actual, recal)
-},
-  mode = c("neg"),
+patrick::with_parameters_test_that("Recal works",
+  {
+    peaks <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
+    unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
+    recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series Score")
+
+    actual <- MFAssignR::Recal(
+      unambig,
+      peaks = peaks$Mono,
+      isopeaks = peaks$Iso,
+      mzRange = 30,
+      mode = mode,
+      SN = 0,
+      series1 = recallist$Series[1],
+      series2 = recallist$Series[2],
+      series3 = recallist$Series[3],
+      series4 = recallist$Series[4],
+      series5 = recallist$Series[5]
+    )
+
+    expected <- load_expected(mode)
+
+    expect_equal(actual$Mono, expected$Mono)
+    expect_equal(actual$Iso, expected$Iso)
+    expect_equal(actual$RecalList, expected$RecalList)
+  },
+  mode = c("neg", "pos"),
 )
-test_that("RecalList works", {
-  data <- load_test_data()
-  recalist <- readRDS("test-data/recalist_neg.rda")
 
-  actual <- MFAssignR::RecalList(data$mfassingr)
+patrick::with_parameters_test_that("RecalList works",
+  {
+    unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
+    expected <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds")))
 
-  expect_equal(actual, recalist, tolerance = 1e-2)
-})
+    actual <- MFAssignR::RecalList(unambig)
+
+    expect_equal(actual, expected)
+  },
+  mode = c("neg", "pos"),
+)
