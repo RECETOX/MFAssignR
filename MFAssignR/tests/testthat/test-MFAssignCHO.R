@@ -1,7 +1,11 @@
 patrick::with_parameters_test_that("MFAssignCHO works", {
-  load("../../data/Raw_Neg_ML.rda")
+#  load("../../data/Raw_Neg_ML.rda")
 #   data <- system.file('data', 'Raw_Neg_ML.rda', package = "MFAssignR")
-   data <- MFAssignR::IsoFiltR(Raw_Neg_ML)
+  load(system.file("data", "Raw_Neg_ML.rda",
+                   package = "MFAssignR",
+                   mustWork = TRUE
+  ))
+  data <- MFAssignR::IsoFiltR(Raw_Neg_ML)
   actual <- MFAssignR::MFAssignCHO(
     peaks = data$Mono,
     isopeaks = data$Iso,
