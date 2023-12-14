@@ -1,6 +1,8 @@
   c13_mass <- 1.0033548380
-  ch2_mass <- 14.01565
-  s34_mass <- 1.995797
+  ch2_mass <- 14.01565 # replaced in a code
+  s34_mass <- 1.995797 # replaced in a code
+  KMDr_34S_int <- 12
+  KMDr_13C_int <- 21
 
 #' Identifies and separates likely isotopic masses from monoisotopic masses
 #'
@@ -60,6 +62,7 @@ IsoFiltR <- function(peaks, SN = 0, Carbrat = 60, Sulfrat = 30, Sulferr = 5, Car
   Sect <- ceiling(nrow(Data1)) / 10
   Over <- round(Sect) * 0.15
 
+# Data broken into 10 overlapping sections
   Data0 <- Data1[1:(Sect + Over), ]
   Data2 <- Data1[Sect:(2 * Sect + Over), ]
   Data3 <- Data1[(2 * Sect):(3 * Sect + Over), ]
@@ -135,25 +138,32 @@ IsoFiltR <- function(peaks, SN = 0, Carbrat = 60, Sulfrat = 30, Sulferr = 5, Car
     Data <- Data[Data$mdiff < 0, ]
     Data <- Data[Data$mdiff > -2 & Data$mdiff < -1.990, ]
 
-    Data$S34_err <- abs(((Data$Exp_mass + 1.995797) - Data$Exp_mass1) / Data$Exp_mass1 * 10^6)
+    Data$S34_err <- abs(((Data$Exp_mass + s34_mass) - Data$Exp_mass1) / Data$Exp_mass1 * 10^6)
     Data <- Data[Data$S34_err <= Sulferr, ]
     Data <- Data[c(1:3)]
 
-    Data$KM <- Data$Exp_mass * (2 / 1.995797)
+    Data$KM <- Data$Exp_mass * (2 / s34_mass)
     Data$KMD <- round((round(Data$Exp_mass) - Data$KM), 3)
-    Data$KMr <- Data$Exp_mass * ((round((14.01565 / 12)) / ((14.01565 / 12))))
+    Data$KMr <- Data$Exp_mass * ((round((ch2_mass / 12)) / ((ch2_mass / 12))))
     Data$KMDr <- round((round(Data$KMr) - Data$KMr), 3)
 
-    Data$KM1 <- Data$Exp_mass1 * (2 / 1.995797)
+    Data$KM1 <- Data$Exp_mass1 * (2 / s34_mass)
     Data$KMD1 <- round((round(Data$Exp_mass1) - Data$KM1), 3)
-    Data$KMr1 <- Data$Exp_mass1 * ((round((14.01565 / 12)) / ((14.01565 / 12))))
+    Data$KMr1 <- Data$Exp_mass1 * ((round((ch2_mass / 12)) / ((ch2_mass / 12))))
     Data$KMDr1 <- round((round(Data$KMr1) - Data$KMr1), 3)
 
     Data$KMDrdiff <- Data$KMDr - Data$KMDr1
     Data$KMDdiff <- Data$KMD - Data$KMD1
+  
+    # KMDr difference for S, see more page 212 [here](https://core.ac.uk/download/pdf/217038739.pdf)
+    # 0.00249 has no explanation ... should it be 0.00149
+    # -0.29349 < KMDrDiff < -0.29051 and 0.7075 < KMDrDiff < 0.70949 for 34S
+   
+     # Pairs <- Data[abs(Data$KMDdiff) < 0.00249 & ((Data$KMDrdiff < -0.29051 & Data$KMDrdiff > -0.29349) |
+    #   (Data$KMDrdiff < 0.70949 & Data$KMDrdiff > 0.7075)), ]
     
-    Pairs <- Data[abs(Data$KMDdiff) < 0.00249 & ((Data$KMDrdiff < -0.29051 & Data$KMDrdiff > -0.29349) |
-      (Data$KMDrdiff < 0.70949 & Data$KMDrdiff > 0.7075)), ]
+    Pairs <- Data[abs(Data$KMDdiff) < 0.00149 & ((Data$KMDrdiff < -0.29051 & Data$KMDrdiff > -0.29349) |
+                                                   (Data$KMDrdiff < 0.70949 & Data$KMDrdiff > 0.7075)), ]
 
     ######################
     # LCMS Change 7/30/20
@@ -486,6 +496,11 @@ compute_pairs <- function(Data, err, mass_difference, normalization_factor) {
 
   # The numbers chosen for filtering are based on the results of positive mode ESI for BB burning aerosol
   # Before change on 6/25/19, the second KMDrdiff was -0.4975
+  
+  # 0.00149 explanation can be found on page 211 [here](https://core.ac.uk/download/pdf/217038739.pdf)
+  # The limits for filtering of isotope pairs for 13C:
+  # 0.4975 < KMDrDiff < -0.494501 and 0.501501 < KMDrDiff < 0.5045
+  # either 0.498001 is a typo or a value in the thesis (the upper limit)
   Pairs <- Data[abs(Data$KMDdiff) <= 0.00149 & ((Data$KMDrdiff < -0.494501 & Data$KMDrdiff > -0.498001) |
     (Data$KMDrdiff < 0.5045 & Data$KMDrdiff > 0.501501)), ]
   
