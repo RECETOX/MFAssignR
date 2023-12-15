@@ -716,17 +716,9 @@ RecalList <- function(df) {
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
 
-
- 
-  Recal <- calculateSummary(Recal)
-
-  Maxmass1 <- Recal[c(1, 56)] # Select Maxmass
-  Maxmass1 <- Maxmass1[!is.na(Maxmass1$Maxmass), ]
-  Secmass1 <- Recal[c(1, 59)] # Select Secmass
-  Secmass1 <- Secmass1[!is.na(Secmass1$Secmass), ]
-
-  Recal <- merge(Recal, Maxmass1, by.x = c("Series"), by.y = c("Series"))
-  Recal <- merge(Recal, Secmass1, by.x = c("Series"), by.y = c("Series"))
+  Recal <- AddCalculatedSummary(Recal)
+  Recal <- FilterAndMerge(Recal, c(56), "Maxmass")
+  Recal <- FilterAndMerge(Recal, c(59), "Secmass")
 
   Recal <- Recal[Recal$number.y > 3, ]
   names(Recal)[56] <- "Maxmass"
@@ -768,12 +760,22 @@ RecalList <- function(df) {
   Recal
 }
 
-  calculateSummary <- function(Recal) {
+  AddCalculatedSummary <- function(Recal) {
     Recal <- dplyr::group_by(Recal, Index)
     Recal <- dplyr::mutate(Recal,
-      Min = min(Exp_mass), Max = max(Exp_mass), MInt = mean(Abundance),
-      Maxmass = ifelse(Abundance == max(Abundance), Exp_mass, NA), Maxint = max(Abundance),
-      Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
+              Min = min(Exp_mass),
+              Max = max(Exp_mass),
+              MInt = mean(Abundance),
+              Maxmass = ifelse(Abundance == max(Abundance),
+              Exp_mass, NA), Maxint = max(Abundance),
+              Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
     )
     return(Recal)
   } 
+
+  FilterAndMerge <- function(Recal, column_indices, column_name) {
+  selected_columns <- Recal[, c(1, column_indices)]
+  selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
+  Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+  return(Recal)
+  }
