@@ -690,24 +690,19 @@ Recal <- function(df,
 
 # df <- Unambig1
 RecalList <- function(df) {
-  if (ncol(df) == 49) {
-    df <- df[-c(19:21)]
-  }
-
-  if (ncol(df) == 53) {
-    df <- df[-c(3, 20:22, 46, 49, 52)]
-  }
+  df <- df[, -which(
+    ncol(df) == 49 & seq_along(df) %in% 19:21 |
+    ncol(df) == 53 & seq_along(df) %in% c(3, 20:22, 46, 49, 52)
+  ), drop = FALSE]
 
 
   df$number <- 1
-  df$Adduct <- "H"
-  df$Adduct <- replace(df$Adduct, df$M > 0, "Na")
-  df$Adduct <- replace(df$Adduct, df$POE == 1, "OE")
-  df$Adduct <- replace(df$Adduct, df$NOE == 1, "OE")
+  df$Adduct <- ifelse(df$M > 0, "Na", "H")
+  df$Adduct[df$POE == 1 | df$NOE == 1] <- "OE"
   df$SeriesAdd <- paste(df$class, df$Adduct, sep = "_")
 
-  colnames(df)[colnames(df) == "exp_mass"] <- "Exp_mass"
-  colnames(df)[colnames(df) == "abundance"] <- "Abundance"
+  colnames(df) <- sub("exp_mass", "Exp_mass", colnames(df))
+  colnames(df) <- sub("abundance", "Abundance", colnames(df))
 
   df1 <- subset(
     aggregate(
