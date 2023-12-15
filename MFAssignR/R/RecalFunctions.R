@@ -712,10 +712,12 @@ RecalList <- function(df) {
     na.action = NULL
   )
 
-  longseries <- df1[order(-df1$number), ]
-  longseries$Index <- 1:nrow(longseries)
-  Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
+  longseries <- df1 |> dplyr::arrange(desc(number)) |> dplyr::mutate(Index = dplyr::row_number())
+  Recal <- df %>%
+    dplyr::left_join(longseries, by = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
+
+
  
   Recal <- calculateSummary(Recal)
 
