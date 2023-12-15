@@ -690,9 +690,12 @@ Recal <- function(df,
 
 # df <- Unambig1
 RecalList <- function(df) {
+  cols_to_remove_if_49 <- c(19:21)
+  cols_to_remove_if_53 <- c(3, 20:22, 46, 49, 52)
+
   df <- df[, -which(
-    ncol(df) == 49 & seq_along(df) %in% 19:21 |
-    ncol(df) == 53 & seq_along(df) %in% c(3, 20:22, 46, 49, 52)
+    ncol(df) == 49 & seq_along(df) %in% cols_to_remove_if_49 |
+    ncol(df) == 53 & seq_along(df) %in% cols_to_remove_if_53
   ), drop = FALSE]
 
 
@@ -737,8 +740,10 @@ RecalList <- function(df) {
   
   columns_to_drop <- c(5, 7, 8, 9, 10, 11, 12)
   Recal <- Recal[, -columns_to_drop]
+
+  columns_to_rename <- c(2, 3, 4, 5, 6, 7, 8, 9)
   new_column_names <- c("Number Observed", "Series Index", "Mass Range", "Tall Peak", "Abundance Score", "Peak Score", "Peak Distance", "Series Score")
-  names(Recal)[c(2, 3, 4, 5, 6, 7, 8, 9)] <- new_column_names
+  names(Recal)[columns_to_rename] <- new_column_names
   Recal <- Recal[!duplicated(Recal), ]
 }
 
