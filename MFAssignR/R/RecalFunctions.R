@@ -606,31 +606,18 @@ Recal <- function(df,
 
 
   if (cols == 3) {
-    peaks <- peaks[c(2, 1, 3)]
-    names(peaks)[2] <- "abundance"
-    names(peaks)[1] <- "exp_mass"
-    isopeaks2 <- isopeaks2[c(2, 1, 3, 4)]
-    names(isopeaks2)[2] <- "iso_abund"
-    names(isopeaks2)[1] <- "iso_mass"
-    names(isopeaks2)[4] <- "tag"
-    names(RecalOut)[1] <- "abundance"
-    names(RecalOut)[2] <- "exp_mass"
+    peaks <- setNames(peaks[c(2, 1, 3)], c("exp_mass", "abundance", names(peaks)[3]))
+    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3, 4)], c("iso_mass", "iso_abund", names(isopeaks2)[3], "tag"))
+    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
 
   if (cols == 2) {
-    peaks <- peaks[c(2, 1)]
-    names(peaks)[2] <- "abundance"
-    names(peaks)[1] <- "exp_mass"
-    isopeaks2 <- isopeaks2[c(2, 1, 3)]
-    names(isopeaks2)[2] <- "iso_abund"
-    names(isopeaks2)[1] <- "iso_mass"
-    names(isopeaks2)[3] <- "tag"
-    names(RecalOut)[1] <- "abundance"
-    names(RecalOut)[2] <- "exp_mass"
+    peaks <- setNames(peaks[c(2, 1)], c("exp_mass", "abundance"))
+    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3)], c("iso_mass", "iso_abund", "tag"))
+    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
 
   Output <- list(Plot = MZ, Mono = peaks, Iso = isopeaks2, RecalList = RecalOut)
-  Output
 }
 
 
