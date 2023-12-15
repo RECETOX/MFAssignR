@@ -713,8 +713,7 @@ RecalList <- function(df) {
   )
 
   longseries <- df1 |> dplyr::arrange(desc(number)) |> dplyr::mutate(Index = dplyr::row_number())
-  Recal <- df %>%
-    dplyr::left_join(longseries, by = c("SeriesAdd", "DBE"))
+  Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
 
 
