@@ -695,7 +695,7 @@ RecalList <- function(df) {
 
   df <- df[, -which(
     ncol(df) == 49 & seq_along(df) %in% cols_to_remove_if_49 |
-    ncol(df) == 53 & seq_along(df) %in% cols_to_remove_if_53
+      ncol(df) == 53 & seq_along(df) %in% cols_to_remove_if_53
   ), drop = FALSE]
 
 
@@ -709,7 +709,9 @@ RecalList <- function(df) {
 
   df1 <- na.omit(aggregate(number ~ SeriesAdd + DBE, df, sum, na.rm = TRUE))
 
-  longseries <- df1 |> dplyr::arrange(desc(number)) |> dplyr::mutate(Index = dplyr::row_number())
+  longseries <- df1 |>
+    dplyr::arrange(desc(number)) |>
+    dplyr::mutate(Index = dplyr::row_number())
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
 
@@ -722,9 +724,10 @@ RecalList <- function(df) {
   Recal <- Recal[!is.na(Recal$Maxmass), ]
 
   breaks <- c(0, 200, 300, 400, 500, 600, 700, 800, Inf)
-  Recal$M.window <- cut(Recal$Maxmass, breaks, 
+  Recal$M.window <- cut(Recal$Maxmass, breaks,
     labels = c("0-200", "200-300", "300-400", "400-500", "500-600", "600-700", "700-800", ">800"),
-    include.lowest = TRUE)
+    include.lowest = TRUE
+  )
 
   Recal1 <- aggregate(MInt ~ M.window, Recal, median, na.rm = TRUE)
   Recal <- merge(Recal, Recal1, by = "M.window")
@@ -737,7 +740,7 @@ RecalList <- function(df) {
   Recal$Max <- round(Recal$Max, 3)
   Recal$SerScor <- ((Recal$Max - Recal$Min) / 14 + 1) / Recal$number.y
   Recal <- tidyr::unite(Recal, Range, Min, Max, sep = "-")
-  
+
   columns_to_drop <- c(5, 7, 8, 9, 10, 11, 12)
   Recal <- Recal[, -columns_to_drop]
 
@@ -754,15 +757,16 @@ AddCalculatedSummary <- function(Recal) {
     Max = max(Exp_mass),
     MInt = mean(Abundance),
     Maxmass = ifelse(Abundance == max(Abundance),
-    Exp_mass, NA), Maxint = max(Abundance),
+      Exp_mass, NA
+    ), Maxint = max(Abundance),
     Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
   )
   return(Recal)
-} 
+}
 
 FilterAndMerge <- function(Recal, column_indices, column_name) {
-selected_columns <- Recal[, c(1, column_indices)]
-selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
-Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
-return(Recal)
+  selected_columns <- Recal[, c(1, column_indices)]
+  selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
+  Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+  return(Recal)
 }
