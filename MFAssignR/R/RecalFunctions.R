@@ -716,13 +716,8 @@ RecalList <- function(df) {
   longseries$Index <- 1:nrow(longseries)
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
-
-  Recal <- dplyr::group_by(Recal, Index)
-  Recal <- dplyr::mutate(Recal,
-    Min = min(Exp_mass), Max = max(Exp_mass), MInt = mean(Abundance),
-    Maxmass = ifelse(Abundance == max(Abundance), Exp_mass, NA), Maxint = max(Abundance),
-    Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
-  )
+ 
+  Recal <- calculateSummary(Recal)
 
   Maxmass1 <- Recal[c(1, 56)] # Select Maxmass
   Maxmass1 <- Maxmass1[!is.na(Maxmass1$Maxmass), ]
@@ -771,3 +766,13 @@ RecalList <- function(df) {
   Recal <- Recal[!duplicated(Recal), ]
   Recal
 }
+
+  calculateSummary <- function(Recal) {
+    Recal <- dplyr::group_by(Recal, Index)
+    Recal <- dplyr::mutate(Recal,
+      Min = min(Exp_mass), Max = max(Exp_mass), MInt = mean(Abundance),
+      Maxmass = ifelse(Abundance == max(Abundance), Exp_mass, NA), Maxint = max(Abundance),
+      Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
+    )
+    return(Recal)
+  } 
