@@ -704,13 +704,7 @@ RecalList <- function(df) {
   colnames(df) <- sub("exp_mass", "Exp_mass", colnames(df))
   colnames(df) <- sub("abundance", "Abundance", colnames(df))
 
-  df1 <- subset(
-    aggregate(
-      number ~ SeriesAdd + DBE, df,
-      function(x) number <- sum(x, na.rm = TRUE)
-    ),
-    na.action = NULL
-  )
+  df1 <- na.omit(aggregate(number ~ SeriesAdd + DBE, df, sum, na.rm = TRUE))
 
   longseries <- df1 |> dplyr::arrange(desc(number)) |> dplyr::mutate(Index = dplyr::row_number())
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
@@ -723,20 +717,13 @@ RecalList <- function(df) {
   Recal <- Recal[Recal$number.y > 3, ]
   names(Recal)[56] <- "Maxmass"
   Recal <- Recal[!is.na(Recal$Maxmass), ]
-  Recal$M.window <- "a"
-  Recal$M.window[Recal$Maxmass > 0 & Recal$Maxmass < 200] <- "0-200"
-  Recal$M.window[Recal$Maxmass > 200 & Recal$Maxmass < 300] <- "200-300"
-  Recal$M.window[Recal$Maxmass > 300 & Recal$Maxmass < 400] <- "300-400"
-  Recal$M.window[Recal$Maxmass > 400 & Recal$Maxmass < 500] <- "400-500"
-  Recal$M.window[Recal$Maxmass > 500 & Recal$Maxmass < 600] <- "500-600"
-  Recal$M.window[Recal$Maxmass > 600 & Recal$Maxmass < 700] <- "600-700"
-  Recal$M.window[Recal$Maxmass > 700 & Recal$Maxmass < 800] <- "700-800"
-  Recal$M.window[Recal$Maxmass > 800] <- ">800"
 
-  Recal1 <- aggregate(
-    MInt ~ M.window, Recal,
-    function(x) number <- median(x, na.rm = TRUE)
-  )
+  breaks <- c(0, 200, 300, 400, 500, 600, 700, 800, Inf)
+  Recal$M.window <- cut(Recal$Maxmass, breaks, 
+    labels = c("0-200", "200-300", "300-400", "400-500", "500-600", "600-700", "700-800", ">800"),
+    include.lowest = TRUE)
+
+  Recal1 <- aggregate(MInt ~ M.window, Recal, median, na.rm = TRUE)
   Recal <- merge(Recal, Recal1, by = "M.window")
 
   Recal$IntRel <- (Recal$MInt.x - Recal$MInt.y) / Recal$MInt.y * 100
@@ -747,35 +734,30 @@ RecalList <- function(df) {
   Recal$Max <- round(Recal$Max, 3)
   Recal$SerScor <- ((Recal$Max - Recal$Min) / 14 + 1) / Recal$number.y
   Recal <- tidyr::unite(Recal, Range, Min, Max, sep = "-")
-  Recal <- Recal[-c(5, 7, 8, 9, 10, 11, 12)]
-  names(Recal)[3] <- "Series Index"
-  names(Recal)[2] <- "Number Observed"
-  names(Recal)[4] <- "Mass Range"
-  names(Recal)[5] <- "Tall Peak"
-  names(Recal)[6] <- "Abundance Score"
-  names(Recal)[9] <- "Series Score"
-  names(Recal)[8] <- "Peak Distance"
-  names(Recal)[7] <- "Peak Score"
+  
+  columns_to_drop <- c(5, 7, 8, 9, 10, 11, 12)
+  Recal <- Recal[, -columns_to_drop]
+  new_column_names <- c("Number Observed", "Series Index", "Mass Range", "Tall Peak", "Abundance Score", "Peak Score", "Peak Distance", "Series Score")
+  names(Recal)[c(2, 3, 4, 5, 6, 7, 8, 9)] <- new_column_names
   Recal <- Recal[!duplicated(Recal), ]
-  Recal
 }
 
-  AddCalculatedSummary <- function(Recal) {
-    Recal <- dplyr::group_by(Recal, Index)
-    Recal <- dplyr::mutate(Recal,
-              Min = min(Exp_mass),
-              Max = max(Exp_mass),
-              MInt = mean(Abundance),
-              Maxmass = ifelse(Abundance == max(Abundance),
-              Exp_mass, NA), Maxint = max(Abundance),
-              Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
-    )
-    return(Recal)
-  } 
-
-  FilterAndMerge <- function(Recal, column_indices, column_name) {
-  selected_columns <- Recal[, c(1, column_indices)]
-  selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
-  Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+AddCalculatedSummary <- function(Recal) {
+  Recal <- dplyr::group_by(Recal, Index)
+  Recal <- dplyr::mutate(Recal,
+    Min = min(Exp_mass),
+    Max = max(Exp_mass),
+    MInt = mean(Abundance),
+    Maxmass = ifelse(Abundance == max(Abundance),
+    Exp_mass, NA), Maxint = max(Abundance),
+    Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
+  )
   return(Recal)
-  }
+} 
+
+FilterAndMerge <- function(Recal, column_indices, column_name) {
+selected_columns <- Recal[, c(1, column_indices)]
+selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
+Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+return(Recal)
+}
