@@ -51,7 +51,12 @@ default is 150}
 }
 \value{
 list(MZ, Mono, Iso, RecalOut) contains the mass spectrum (MZ), recalibrated "Mono" data frame,
- recalibrated "Iso" data frame, and the recalibrants list (RecalOut)
+recalibrated "Iso" data frame, and the recalibrants list (RecalOut)
+
+Recal(
+df = Data, peaks = Mono, isopeaks = Iso, mode = "pos", SN = 300, series1 = "O4_Na_2",
+series2 = "O4_H_8", series3 = "O6_Na_8"
+)
 }
 \description{
 Recal() takes the data frame output from MFAssign functions, the outputs of
@@ -73,14 +78,6 @@ This recalibration method uses the first step from the paper from Kozhinov et al
 or "walking" recalibration from Savory et al. 2011 (Anal. Chem) to further improve
 the recalibration.
 
-
 These parameters will be used to identify more potential recalibrants, and the
 tallest peaks within a user defined mass range will be used as recalibrants.
-}
-\examples{
-Recal(df = Data, peaks = Mono, isopeaks = Iso, mode = "neg", SN = 500, series1 = "O4_H_2",
-series2 = "O4_H_8", series3 = "O6_H_8")
-
-Recal(df = Data, peaks = Mono, isopeaks = Iso, mode = "pos", SN = 300, series1 = "O4_Na_2",
-series2 = "O4_H_8", series3 = "O6_Na_8")
 }

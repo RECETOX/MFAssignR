@@ -19,11 +19,5 @@ For example, 1 -> "C", 2 -> "H", ..., 9 -> "Z"
 }
 \details{
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
- environment.
-}
-\examples{
-CompIntToFactor(1)
-
-CompIntToFactor(2)
-
+environment.
 }

@@ -126,15 +126,15 @@ Turns on or off CH2 KMD prescreening before initial assignment. Default is "off"
 }
 \value{
 list(Unambig = Unambig, Ambig = Ambigout, None = unassigned, MSAssign = MZ,
-         Error = Error, MSgroups = MZgroups, VK = VK)
+Error = Error, MSgroups = MZgroups, VK = VK)
 
-  Unambig - data frame containing unambiguous assignments
-  Ambig - data frame containing ambiguous assignments
-  None - data frame containing unassigned masses
-  MSAssign - ggplot of mass spectrum highlighting assigned/unassigned
-  Error - ggplot of the Error vs. m/z
-  MSgroups - ggplot of mass spectrum colored by molecular group
-  VK - ggplot of van Krevelen plot, colored by molecular group
+Unambig - data frame containing unambiguous assignments
+Ambig - data frame containing ambiguous assignments
+None - data frame containing unassigned masses
+MSAssign - ggplot of mass spectrum highlighting assigned/unassigned
+Error - ggplot of the Error vs. m/z
+MSgroups - ggplot of mass spectrum colored by molecular group
+VK - ggplot of van Krevelen plot, colored by molecular group
 }
 \description{
 MFAssignCHO() assigns all possible molecular formulae to each
@@ -168,8 +168,4 @@ input dataframe containing the masses identified as istopic by the IsoFiltR func
 outputs of that function can be directly put into this function as peaks and isopeaks,
 doing so will allow likely 13C isotope masses to be match to assigned monoisotopic masses.
 The inclusion of an isotopic mass list is not required, however.
-}
-\examples{
-MFAssignCHO(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 200, highMW = 700)
-MFAssignCHO(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 100, highMW = 1000)
 }

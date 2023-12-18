@@ -15,8 +15,3 @@ given MW and subject to constraints in the \code{\link{ValidFormula}} function.
 This is a subfunction of the MFAssign function and will not work
 independently of that function.
 }
-\examples{
-env <- environment()
-FindCoreFormulae(env)
-
-}

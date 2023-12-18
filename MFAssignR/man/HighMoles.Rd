@@ -31,15 +31,9 @@ numeric; value of maximum limit of moles
 }
 \description{
 Returns the maximum limit of moles used by the
-  \code{\link{MFAssign}} function, specified by the user.
+\code{\link{MFAssign}} function, specified by the user.
 }
 \details{
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
- environment.
-}
-\examples{
-HighMoles("C")
-
-HighMoles('C')
-
+environment.
 }

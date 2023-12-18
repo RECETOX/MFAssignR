@@ -14,15 +14,9 @@ numeric; value of minimum limit of moles
 }
 \description{
 Returns the minimum limit of moles used by the
-  \code{\link{MFAssign}} function.
+\code{\link{MFAssign}} function.
 }
 \details{
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
- environment.
-}
-\examples{
-MinMoles("C")
-
-MinMoles('C')
-
+environment.
 }

@@ -19,11 +19,5 @@ constraints
 }
 \details{
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
- environment.
-}
-\examples{
-ValidFormula(moles)
-
-ValidFormula(c(2,3,1,0,0,0,0,0,1))
-
+environment.
 }

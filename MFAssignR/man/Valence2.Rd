@@ -14,13 +14,7 @@ numeric; value of valence
 }
 \description{
 Returns the valence of the specified component; used by the
-  \code{\link{MFAssign}} function.
- This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
- environment.
-}
-\examples{
-Valence("C")
-
-Valence('C')
-
+\code{\link{MFAssign}} function.
+This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
+environment.
 }

@@ -7,20 +7,26 @@
 HistNoise(df, SN = 0, bin = 0.01)
 }
 \arguments{
-\item{df}{- dataframe of intensity and ion mass, column 1 should be mass,
-column 2 should be intensity}
+\item{df}{\itemize{
+\item dataframe of intensity and ion mass, column 1 should be mass,
+column 2 should be intensity
+}}
 
-\item{SN}{- numeric value for situations where a predefined noise value
-is desired, default is 0}
+\item{SN}{\itemize{
+\item numeric value for situations where a predefined noise value
+is desired, default is 0
+}}
 
-\item{bin}{- numeric value determining the binwidth of the histogram,
-default is 0.01}
+\item{bin}{\itemize{
+\item numeric value determining the binwidth of the histogram,
+default is 0.01
+}}
 }
 \value{
 List containing numeric noise level ("Noise")
 and natural log intensity histogram ("Hist")
 
-  Histogram shows where the cut is being applied
+Histogram shows where the cut is being applied
 }
 \description{
 For raw mass spectral data using the method
@@ -36,9 +42,4 @@ The value reported in the console will be the estimated noise level
 and the plot will demonstrate where the cut is being applied to the
 data. The value in the console can then be multiplied by whatever
 value is desired in order to reach the value to be used to cut the data.
-}
-\examples{
-HistNoise(df, SN = 0, bin = 0.01)
-HistNoise(df)
-
 }

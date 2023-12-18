@@ -7,21 +7,31 @@
 KMDNoise(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = NA)
 }
 \arguments{
-\item{df}{- dataframe of intensity and ion mass, column 1 should be mass, column 2 should be intensity}
+\item{df}{\itemize{
+\item dataframe of intensity and ion mass, column 1 should be mass, column 2 should be intensity
+}}
 
-\item{upper.y}{- sets the upper limit for the y intercept, default is 0.2}
+\item{upper.y}{\itemize{
+\item sets the upper limit for the y intercept, default is 0.2
+}}
 
-\item{lower.y}{- sets the lower limit for the y intercept, default is 0.05}
+\item{lower.y}{\itemize{
+\item sets the lower limit for the y intercept, default is 0.05
+}}
 
-\item{upper.x}{- sets the upper limit for the x intercept, default is NA}
+\item{upper.x}{\itemize{
+\item sets the upper limit for the x intercept, default is NA
+}}
 
-\item{lower.x}{- sets the lower limit for the x intercept, default is NA}
+\item{lower.x}{\itemize{
+\item sets the lower limit for the x intercept, default is NA
+}}
 }
 \value{
 list(Noise = Noise, Plot = KMD)
-        Noise - numeric value of the noise level for the data set
-        Plot - plot showing the KMD for the inputted data with the
-        noise estimation area highlighted.
+Noise - numeric value of the noise level for the data set
+Plot - plot showing the KMD for the inputted data with the
+noise estimation area highlighted.
 }
 \description{
 For raw mass spectral data using a method
@@ -79,9 +89,4 @@ to NA, which means if the are not changed, it will default
 to the maximum and minimum mass in the mass spectrum. If the
 user wants to select a specific region then they can put
 whatever limit they want on it.
-}
-\examples{
-KMDNoise(df, upper = 0.2, lower = 0.05)
-KMDNoise(df)
-
 }

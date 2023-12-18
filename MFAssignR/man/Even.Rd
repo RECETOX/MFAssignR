@@ -21,13 +21,3 @@ Returns Boolean if number is Even
 
 Returns Boolean if number is Even
 }
-\examples{
-Even(123)
-
-Even(12)
-
-Even(123)
-
-Even(12)
-
-}
