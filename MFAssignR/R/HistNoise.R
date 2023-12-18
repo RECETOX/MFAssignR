@@ -25,10 +25,6 @@
 #'
 #'   Histogram shows where the cut is being applied
 #'
-#' @examples
-#' HistNoise(df, SN = 0, bin = 0.01)
-#' HistNoise(df)
-#'
 #' @export
 
 
