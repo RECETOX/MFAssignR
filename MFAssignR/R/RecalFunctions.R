@@ -50,12 +50,6 @@
 #' @return list(MZ, Mono, Iso, RecalOut) contains the mass spectrum (MZ), recalibrated "Mono" data frame,
 #'  recalibrated "Iso" data frame, and the recalibrants list (RecalOut)
 #'
-#' @examples
-#' Recal(
-#'   df = Data, peaks = Mono, isopeaks = Iso, mode = "neg", SN = 500, series1 = "O4_H_2",
-#'   series2 = "O4_H_8", series3 = "O6_H_8"
-#' )
-#'
 #' Recal(
 #'   df = Data, peaks = Mono, isopeaks = Iso, mode = "pos", SN = 300, series1 = "O4_Na_2",
 #'   series2 = "O4_H_8", series3 = "O6_Na_8"
@@ -684,8 +678,6 @@ Recal <- function(df,
 #'
 #' @return data frame
 #'
-#' @examples
-#' RecalList(df = Data)
 #' @export
 
 # df <- Unambig1
