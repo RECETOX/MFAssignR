@@ -156,10 +156,6 @@ c13_isodiff_double <- 2.006709676
 #'   MSgroups - ggplot of mass spectrum colored by molecular group
 #'   VK - ggplot of van Krevelen plot, colored by molecular group
 #'
-#'
-#' @examples
-#' MFAssign_RMD(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 200, highMW = 700)
-#' MFAssign_RMD(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 100, highMW = 1000, Nx = 3, Sx = 1)
 #' @export
 
 
