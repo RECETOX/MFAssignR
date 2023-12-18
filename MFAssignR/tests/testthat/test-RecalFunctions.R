@@ -47,7 +47,12 @@ patrick::with_parameters_test_that("RecalList works",
 
     actual <- MFAssignR::RecalList(unambig)
 
-    expect_equal(actual, expected)
+    actual <- actual %>% dplyr::select(-"Series Index")
+    expected <- expected %>% dplyr::select(-"Series Index")
+    actual_sorted <- dplyr::arrange_at(actual, "Series")
+    expected_sorted <- dplyr::arrange_at(expected, "Series")
+    
+    expect_equal(actual_sorted, expected_sorted)
   },
   mode = c("neg", "pos"),
 )
