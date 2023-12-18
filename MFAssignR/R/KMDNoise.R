@@ -67,10 +67,6 @@
 #'         Plot - plot showing the KMD for the inputted data with the
 #'         noise estimation area highlighted.
 #'
-#' @examples
-#' KMDNoise(df, upper = 0.2, lower = 0.05)
-#' KMDNoise(df)
-#'
 #' @export
 #'
 # df <- Raw_Neg_ML
@@ -148,8 +144,6 @@ KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = 
 #'
 #' Zoomed Mass spectrum which shows where the cut is being applied
 #'
-#' @examples
-#' SNplot(df, cut = 1000, mass = 300, window.x = 1, window.y = 10)
 #' @import ggplot2
 #' @export
 SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) { # plots a data set displaying the SN cut around a specific mass
