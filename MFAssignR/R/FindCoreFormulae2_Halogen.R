@@ -7,10 +7,6 @@
 #'
 #' @param env environment from \code{\link{MFAssign}} function
 #'
-#' @examples
-#' env <- environment()
-#' FindCoreFormulae(env)
-#'
 #' @export
 #'
 #'

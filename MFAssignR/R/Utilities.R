@@ -20,11 +20,6 @@
 #'
 #' @return numeric; integer representation for passed in factor component
 #'
-#' @examples
-#' CompFactorToInt("C")
-#'
-#' CompFactorToInt('C')
-#'
 #' @export
 #'
 CompFactorToInt <- function(x) {
@@ -70,10 +65,6 @@ CompFactorToInt <- function(x) {
 #' @return factor (\code{"C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl",
 #'  "Cl37", "M", "NH4", "POE", "NOE", "Z"})
 #'
-#' @examples
-#' CompIntToFactor(1)
-#'
-#' CompIntToFactor(2)
 #'
 #' @export
 #'
@@ -155,10 +146,6 @@ CompIntToFactor <- function(x) {
 #'
 #' @return numeric; value of nominal mass
 #'
-#' @examples
-#' EM("C")
-#'
-#' EM('C')
 #'
 #' @export
 #'
@@ -203,10 +190,6 @@ NM <- function(x) {
 #'
 #' @return numeric; value of expected mass
 #'
-#' @examples
-#' EM("C")
-#'
-#' EM('C')
 #'
 #' @export
 #'
@@ -264,10 +247,6 @@ EM <- function(x) {
 #'
 #' @return numeric; value of minimum limit of moles
 #'
-#' @examples
-#' MinMoles("C")
-#'
-#' MinMoles('C')
 #'
 #' @export
 #'
@@ -308,11 +287,6 @@ MinMoles <- function(x) {
 #' @param x component; factor (\code{"C", "H", "O", "N", "S", "P", "M", "E", "Z"})
 #'
 #' @return numeric; value of maximum limit of moles
-#'
-#' @examples
-#' MaxMoles("C")
-#'
-#' MaxMoles('C')
 #'
 #' @export
 #'
@@ -355,10 +329,6 @@ MaxMoles <- function(x) {
 #'
 #' @return numeric; value of minimum limit of moles
 #'
-#' @examples
-#' LowMoles("C")
-#'
-#' LowMoles('C')
 #'
 #' @export
 #'
@@ -405,11 +375,6 @@ LowMoles <- function(x) {
 #'
 #' @return numeric; value of maximum limit of moles
 #'
-#' @examples
-#' HighMoles("C")
-#'
-#' HighMoles('C')
-#'
 #' @export
 #'
 HighMoles <- function(x, N=0, S=0, P=0, Cl=0, Fl = 0, POE = 0, NOE = 0, E=0, S34=0, Cl37=0,
@@ -453,10 +418,6 @@ HighMoles <- function(x, N=0, S=0, P=0, Cl=0, Fl = 0, POE = 0, NOE = 0, E=0, S34
 #'
 #' @return numeric; value of valence
 #'
-#' @examples
-#' Valence("C")
-#'
-#' Valence('C')
 #'
 #' @export
 #'
@@ -501,10 +462,6 @@ Valence <- function(x) {
 #'
 #' @return Boolean
 #'
-#' @examples
-#' Even(123)
-#'
-#' Even(12)
 #'
 #' @export
 #'
@@ -526,10 +483,6 @@ Even <- function(x) {
 #'
 #' @return boolean
 #'
-#' @examples
-#' ValidFormula(moles)
-#'
-#' ValidFormula(c(2,3,1,0,0,0,0,0,1))
 #'
 #' @export
 #'
