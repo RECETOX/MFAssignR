@@ -564,9 +564,7 @@ Recal <- function(df,
   if (cols == 3) {
     AbundM <- df[c("Exp_mass", "Abundance", "RT")]
     AbundI <- df[c("C13_mass", "C13_abund", "C13_RT")]
-    names(AbundI)[1] <- "Exp_mass"
-    names(AbundI)[2] <- "Abundance"
-    names(AbundI)[3] <- "RT"
+    colnames(AbundI) <- c("Exp_mass", "Abundance", "RT")
     Abund <- rbind(AbundM, AbundI)
     Abund <- Abund[Abund$Abundance > 0, ]
 
@@ -578,8 +576,7 @@ Recal <- function(df,
   if (cols == 2) {
     AbundM <- df[c("Exp_mass", "Abundance")]
     AbundI <- df[c("C13_mass", "C13_abund")]
-    names(AbundI)[1] <- "Exp_mass"
-    names(AbundI)[2] <- "Abundance"
+    names(AbundI) <- c("Exp_mass", "Abundance")
     Abund <- rbind(AbundM, AbundI)
     Abund <- Abund[Abund$Abundance > 0, ]
 
@@ -589,21 +586,9 @@ Recal <- function(df,
   }
 
   # Plot highlighting the recalibrant ions for qualitative assessment.
-  MZ <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = plotpeak, size = 0.7, ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
-    ggplot2::geom_segment(data = RecalPlot, size = 1.2, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 15),
-      legend.text = ggplot2::element_text(face = "bold", size = 15), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
+  MZ <- plot_spectrum(plotpeak, RecalPlot)
 
   # Preparing the final output of the function, the recalibrants list.
-
 
   if (cols == 3) {
     peaks <- setNames(peaks[c(2, 1, 3)], c("exp_mass", "abundance", names(peaks)[3]))
@@ -620,7 +605,24 @@ Recal <- function(df,
   Output <- list(Plot = MZ, Mono = peaks, Iso = isopeaks2, RecalList = RecalOut)
 }
 
-
+plot_spectrum <- function(plotpeak, RecalPlot) {
+  ggplot() +
+    geom_segment(data = plotpeak, size = 0.7, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
+    geom_segment(data = RecalPlot, size = 1.2, aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
+    theme_bw() +
+    labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
+    theme(
+      axis.title = element_text(size = 15, face = "bold"),
+      strip.text = element_text(size = 15, face = "bold"),
+      axis.text = element_text(size = 15, face = "bold"),
+      legend.title = element_text(face = "bold", size = 15),
+      legend.text = element_text(face = "bold", size = 15),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      strip.background = element_blank(),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+}
 #' Identifies canditate series for recalibration
 #'
 #' RecalList() takes the output from MFAssign() and/or MFAssignCHO()
