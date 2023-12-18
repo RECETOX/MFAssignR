@@ -175,10 +175,10 @@ Recal <- function(df,
     # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:3)]
-    names(isopeaks) <- c("mass", "Abundance", "Tag")
-    isopeaks$Tag2 <- "Iso"
+    isopeaks <- setNames(isopeaks, c("mass", "Abundance", "Tag"))
+    peaks <- setNames(peaks, c("Abundance", "mass"))
 
-    names(peaks) <- c("Abundance", "mass")
+    isopeaks$Tag2 <- "Iso"
     peaks$Tag <- "X"
     peaks$Tag2 <- "Mono"
 
@@ -227,7 +227,6 @@ Recal <- function(df,
     FinalRecal2 <- dplyr::group_by(NewRecal, Bin)
     # FinalRecal2 <- dplyr::top_n(FinalRecal, obs, Abundance)
 
-
     NewRecal_mono <- FinalRecal2[c(1:4)] # Changed 5/13/20
     NewRecal_iso <- FinalRecal2[c(5, 3, 4, 6)] # Changed 5/13/20
     NewRecal_iso <- NewRecal_iso[NewRecal_iso$C13_mass > 0, ]
@@ -243,28 +242,19 @@ Recal <- function(df,
 
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:4)]
-    names(isopeaks)[1] <- "mass"
-    names(isopeaks)[2] <- "Abundance"
-    names(isopeaks)[3] <- "RT"
-    names(isopeaks)[4] <- "Tag"
-
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "RT"
+    isopeaks <- setNames(isopeaks, c("mass", "Abundance", "RT", "Tag"))
+    peaks <- setNames(peaks, c("mass", "Abundance", "RT"))
+    
+    isopeaks$Tag2 <- "Iso"
     peaks$Tag <- "X"
     peaks$Tag2 <- "Mono"
 
-    isopeaks$Tag2 <- "Iso"
-
-
+    
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:5)]
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "RT"
-    names(peaks)[4] <- "Tag"
-    names(peaks)[5] <- "Tag2"
+    peaks <-  setNames(peaks, c("mass", "Abundance", "RT", "Tag", "Tag2"))
+
 
     peaks <- peaks[c(2, 1, 3, 4, 5)]
     # isodummy <- data.frame
@@ -280,26 +270,11 @@ Recal <- function(df,
       "Abundance", "Exp_mass", "RT", "C", "H", "O", "N", "S", "P", "E",
       "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z", "C13_mass"
     )]
-    RecalList$NM <- round(RecalList$Exp_mass)
-
-    RecalList$KM_O <- RecalList$Exp_mass * (16 / 15.9949146223)
-    RecalList$KMD_O <- round(RecalList$NM - RecalList$KM_O, 3)
-    RecalList$z_O <- round(RecalList$Exp_mass) %% 16 - 16
-
-    RecalList$KM_H2 <- RecalList$Exp_mass * (2 / 2.01565)
-    RecalList$KMD_H2 <- round(RecalList$NM - RecalList$KM_H2, 3)
-    RecalList$z_H2 <- round(RecalList$Exp_mass) %% 2 - 2
+    RecalList <- processMassList(RecalList)
 
     Rest <- df[c("Abundance", "Exp_mass", "RT")]
-    Rest$NM <- round(Rest$Exp_mass)
-
-    Rest$KM_O <- Rest$Exp_mass * (16 / 15.9949146223)
-    Rest$KMD_O <- round(Rest$NM - Rest$KM_O, 3)
-    Rest$z_O <- round(Rest$Exp_mass) %% 16 - 16
-
-    Rest$KM_H2 <- Rest$Exp_mass * (2 / 2.01565)
-    Rest$KMD_H2 <- round(Rest$NM - Rest$KM_H2, 3)
-    Rest$z_H2 <- round(Rest$Exp_mass) %% 2 - 2
+    # Assuming RecalList is your data frame
+    Rest <- processMassList(Rest)
 
     ############
     # Picking recalibrants with series
