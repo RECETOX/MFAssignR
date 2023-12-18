@@ -41,8 +41,6 @@
 #' @return list(Monolist, Isolist):
 #'   Monolist - monoistopic and non-matched masses,
 #'   Isolist - isotopic masses
-#' @examples
-#' IsoFiltR(peaks = df)
 #' @export
 IsoFiltR <- function(peaks, SN = 0, Carbrat = 60, Sulfrat = 30, Sulferr = 5, Carberr = 5) {
   cols <- ncol(peaks)
