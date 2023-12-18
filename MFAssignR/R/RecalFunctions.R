@@ -1,3 +1,75 @@
+#' Process Mass List
+#'
+#' This function processes a data frame containing mass-related information.
+#'
+#' @param data A data frame containing at least the "Exp_mass" column.
+#' @return The input data frame with additional calculated columns.
+#'
+#' @details
+#' The function calculates the following columns:
+#'   - NM: Rounded Exp_mass
+#'   - KM_O: Exp_mass * (16 / 15.9949146223)
+#'   - KMD_O: Rounded NM - KM_O
+#'   - z_O: Rounded Exp_mass %% 16 - 16
+#'   - KM_H2: Exp_mass * (2 / 2.01565)
+#'   - KMD_H2: Rounded NM - KM_H2
+#'   - z_H2: Rounded Exp_mass %% 2 - 2
+#'
+#' @examples
+#' data <- data.frame(Exp_mass = c(100, 150, 200))
+#' processed_data <- processMassList(data)
+#'
+#' @export
+processMassList <- function(data) {
+  data$NM <- round(data$Exp_mass)
+
+  # Process O
+  data$KM_O <- data$Exp_mass * (16 / 15.9949146223)
+  data$KMD_O <- round(data$NM - data$KM_O, 3)
+  data$z_O <- round(data$Exp_mass) %% 16 - 16
+
+  # Process H2
+  data$KM_H2 <- data$Exp_mass * (2 / 2.01565)
+  data$KMD_H2 <- round(data$NM - data$KM_H2, 3)
+  data$z_H2 <- round(data$Exp_mass) %% 2 - 2
+
+  return(data)
+}
+
+#' Process Known Compounds
+#'
+#' This function processes known compounds by merging them with a rest dataset and
+#' updating abundance and type columns based on specified columns and limits.
+#'
+#' @param rest The dataset containing the rest of the compounds.
+#' @param known The dataset containing known compounds.
+#' @param kmd_col The column name for KMD in both datasets.
+#' @param z_col The column name for Z in both datasets.
+#' @param num_col The column name to store the calculated number of compounds.
+#' @param type The column name to store the type of compound.
+#' @param step_limit The limit for considering compounds.
+#' @param remove_indices Indices of rows to be removed from the result.
+#'
+#' @return A processed dataset with updated abundance and type columns.
+#'
+#' @examples
+#' # Example Usage:
+#' processKnown(Rest, KnownO, "KMD_O", "z_O", "O_num", "O", 0.01, c(11, 13, 33))
+#'
+processKnown <- function(rest, known, kmd_col, z_col, num_col, type, step_limit, remove_indices) {
+  known <- known[c(1:22, kmd_col, z_col)] 
+  names(known)[2] <- "base_mass"
+  
+  step_result <- merge(rest, known, by.x = c(kmd_col, z_col), by.y = c(kmd_col, z_col))
+  step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / step_limit)
+  step_result[[type]] <- step_result[[type]] + step_result[[num_col]]
+  step_result$Type <- type
+  step_result$form <- paste(step_result[c("C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE")], sep = "_")
+  step_result <- step_result[abs(step_result[[num_col]]) <= step_limit, ]
+  step_result <- step_result[-remove_indices, ]
+  return(step_result)
+}
+
 #' Generates a plot to visualize recalibrant series, recalibrates two mass lists,
 #' and produces a list of the chosen recalibrants.
 #'
@@ -96,36 +168,25 @@ Recal <- function(df,
   df$Adduct <- replace(df$Adduct, df$NOE == 1, "OE")
   df$series <- paste(df$class, df$Adduct, df$DBE, sep = "_")
   df$mode <- mode
-  names(df)[1] <- "Abundance"
-  names(df)[2] <- "Exp_mass"
+  names(df)[1:2] <- c("Abundance", "Exp_mass")
 
   if (cols == 2) {
     isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, Tag = "X"), isopeaks) # Change 12/6/19
     # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:3)]
-    names(isopeaks)[1] <- "mass"
-    names(isopeaks)[2] <- "Abundance"
-    names(isopeaks)[3] <- "Tag"
-    names
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
+    names(isopeaks) <- c("mass", "Abundance", "Tag")
+    isopeaks$Tag2 <- "Iso"
+
+    names(peaks) <- c("Abundance", "mass")
     peaks$Tag <- "X"
     peaks$Tag2 <- "Mono"
-
-    isopeaks$Tag2 <- "Iso"
 
     # peaks <- if(isopeaks != "none") rbind(peaks, isopeaks) else peaks
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
-    peaks <- peaks[, c(1:4)]
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "Tag"
-    names(peaks)[4] <- "Tag2"
-
-    peaks <- peaks[c(2, 1, 3, 4)]
-    # isodummy <- data.frame
+    peaks <- peaks[, c(1:4)] 
+    peaks <- setNames(peaks[c(2, 1, 3, 4)], c("Abundance", "mass", "Tag", "Tag2"))
     isopeaks <- isopeaks[c(2, 1, 3, 4)]
 
     # Merges recalibrant list to df in order to determine which recalibrants are in the data frame.
@@ -140,58 +201,18 @@ Recal <- function(df,
       "Abundance", "Exp_mass", "C", "H", "O", "N", "S", "P", "E",
       "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z", "C13_mass"
     )]
-    RecalList$NM <- round(RecalList$Exp_mass)
-
-    RecalList$KM_O <- RecalList$Exp_mass * (16 / 15.9949146223)
-    RecalList$KMD_O <- round(RecalList$NM - RecalList$KM_O, 3)
-    RecalList$z_O <- round(RecalList$Exp_mass) %% 16 - 16
-
-    RecalList$KM_H2 <- RecalList$Exp_mass * (2 / 2.01565)
-    RecalList$KMD_H2 <- round(RecalList$NM - RecalList$KM_H2, 3)
-    RecalList$z_H2 <- round(RecalList$Exp_mass) %% 2 - 2
+    RecalList <- processMassList(RecalList)
 
     Rest <- df[c("Abundance", "Exp_mass")]
-    Rest$NM <- round(Rest$Exp_mass)
-
-    Rest$KM_O <- Rest$Exp_mass * (16 / 15.9949146223)
-    Rest$KMD_O <- round(Rest$NM - Rest$KM_O, 3)
-    Rest$z_O <- round(Rest$Exp_mass) %% 16 - 16
-
-    Rest$KM_H2 <- Rest$Exp_mass * (2 / 2.01565)
-    Rest$KMD_H2 <- round(Rest$NM - Rest$KM_H2, 3)
-    Rest$z_H2 <- round(Rest$Exp_mass) %% 2 - 2
+    Rest <- processMassList(Rest)
 
     ############
     # Picking recalibrants with series
-    knownO <- RecalList[c(1:21, 24, 25)]
+    # Process known_O
+    Step2 <- processKnown(Rest, RecalList[c(1:22, 25, 26)], "KMD_O", "z_O", "O_num", "O", step_O, c(11, 13, 33))
 
-    names(knownO)[2] <- "base_mass"
-    Step2 <- merge(Rest, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-    Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
-    Step2$O <- Step2$O + Step2$O_num
-    Step2$Type <- "O"
-    Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
-      Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
-      Step2$POE, Step2$NOE,
-      sep = "_"
-    )
-    Step2 <- Step2[abs(Step2$O_num) <= step_O, ]
-
-    Step2 <- Step2[-c(10, 31)]
-
-    knownH2 <- RecalList[c(1:21, 27, 28)]
-    names(knownH2)[2] <- "base_mass"
-    Step3 <- merge(Rest, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-    Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
-    Step3$H <- Step3$H + 2 * Step3$H2_num
-    Step3$Type <- "H2"
-    Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
-      Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
-      Step3$POE, Step3$NOE,
-      sep = "_"
-    )
-    Step3 <- Step3[abs(Step3$H2_num) <= step_H2, ]
-    Step3 <- Step3[-c(10, 31)]
+    # Process known_H2
+    Step3 <- processKnown(Rest, RecalList[c(1:22, 28, 29)], "KMD_H2", "z_H2", "H2_num", "H2", step_H2, c(11, 13, 33))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
