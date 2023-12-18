@@ -100,9 +100,6 @@
 #'   MSgroups - ggplot of mass spectrum colored by molecular group
 #'   VK - ggplot of van Krevelen plot, colored by molecular group
 #'
-#' @examples
-#' MFAssignCHO(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 200, highMW = 700)
-#' MFAssignCHO(peaks = Mono_df, isopeaks = Iso_df, "neg", lowMW = 100, highMW = 1000)
 #' @export
 
 MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, POEx = 0, NOEx = 0, Ex = 0, Mx = 0, NH4x = 0, Zx=1, Ox = 30,
