@@ -588,6 +588,11 @@ Recal <- function(df,
     RecalPlot <- merge(RecalOut, Abund, by.x = c("Exp_mass", "Abundance", "RT"), by.y = c("Exp_mass", "Abundance", "RT"))
 
     RecalOut <- RecalOut[c(3, 5, 6, 9, 10)]
+
+    # Preparing the final output of the function, the recalibrants list.
+    peaks <- setNames(peaks[c(2, 1, 3)], c("exp_mass", "abundance", names(peaks)[3]))
+    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3, 4)], c("iso_mass", "iso_abund", names(isopeaks2)[3], "tag"))
+    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
 
   if (cols == 2) {
@@ -600,24 +605,15 @@ Recal <- function(df,
     RecalPlot <- merge(RecalOut, Abund, by.x = c("Exp_mass", "Abundance"), by.y = c("Exp_mass", "Abundance"))
 
     RecalOut <- RecalOut[c(2, 3, 4, 7, 8)]
-  }
 
-  # Plot highlighting the recalibrant ions for qualitative assessment.
-  MZ <- plot_spectrum(plotpeak, RecalPlot)
-
-  # Preparing the final output of the function, the recalibrants list.
-
-  if (cols == 3) {
-    peaks <- setNames(peaks[c(2, 1, 3)], c("exp_mass", "abundance", names(peaks)[3]))
-    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3, 4)], c("iso_mass", "iso_abund", names(isopeaks2)[3], "tag"))
-    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
-  }
-
-  if (cols == 2) {
+    # Preparing the final output of the function, the recalibrants list.
     peaks <- setNames(peaks[c(2, 1)], c("exp_mass", "abundance"))
     isopeaks2 <- setNames(isopeaks2[c(2, 1, 3)], c("iso_mass", "iso_abund", "tag"))
     names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
+
+  # Plot highlighting the recalibrant ions for qualitative assessment.
+  MZ <- plot_spectrum(plotpeak, RecalPlot)
 
   Output <- list(Plot = MZ, Mono = peaks, Iso = isopeaks2, RecalList = RecalOut)
 }
