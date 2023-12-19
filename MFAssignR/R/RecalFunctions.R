@@ -1,3 +1,34 @@
+#' Plot Spectrum Function
+#'
+#' This function generates a mass spectrum plot using ggplot2.
+#'
+#' @param plotpeak A data frame containing information for the first set of segments.
+#' @param RecalPlot A data frame containing information for the second set of segments.
+#'
+#' @return A ggplot object representing the mass spectrum plot.
+#'
+#' @examples
+#' plot_spectrum(plotpeak_data, RecalPlot_data)
+#'
+plot_spectrum <- function(plotpeak, RecalPlot) {
+  ggplot() +
+    geom_segment(data = plotpeak, size = 0.7, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
+    geom_segment(data = RecalPlot, size = 1.2, aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
+    theme_bw() +
+    labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
+    theme(
+      axis.title = element_text(size = 15, face = "bold"),
+      strip.text = element_text(size = 15, face = "bold"),
+      axis.text = element_text(size = 15, face = "bold"),
+      legend.title = element_text(face = "bold", size = 15),
+      legend.text = element_text(face = "bold", size = 15),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      strip.background = element_blank(),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+}
+
 #' Process Mass List
 #'
 #' This function processes a data frame containing mass-related information.
@@ -57,9 +88,8 @@ processMassList <- function(data) {
 #' processKnown(Rest, KnownO, "KMD_O", "z_O", "O_num", "O", 0.01, c(11, 13, 33))
 #'
 processKnown <- function(rest, known, kmd_col, z_col, num_col, type, step_limit, remove_indices) {
-  known <- known[c(1:22, kmd_col, z_col)] 
   names(known)[2] <- "base_mass"
-  
+
   step_result <- merge(rest, known, by.x = c(kmd_col, z_col), by.y = c(kmd_col, z_col))
   step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / step_limit)
   step_result[[type]] <- step_result[[type]] + step_result[[num_col]]
@@ -185,7 +215,7 @@ Recal <- function(df,
     # peaks <- if(isopeaks != "none") rbind(peaks, isopeaks) else peaks
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
-    peaks <- peaks[, c(1:4)] 
+    peaks <- peaks[, c(1:4)]
     peaks <- setNames(peaks[c(2, 1, 3, 4)], c("Abundance", "mass", "Tag", "Tag2"))
     isopeaks <- isopeaks[c(2, 1, 3, 4)]
 
@@ -209,10 +239,10 @@ Recal <- function(df,
     ############
     # Picking recalibrants with series
     # Process known_O
-    Step2 <- processKnown(Rest, RecalList[c(1:22, 25, 26)], "KMD_O", "z_O", "O_num", "O", step_O, c(11, 13, 33))
+    Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", "O", step_O, c(10, 31))
 
     # Process known_H2
-    Step3 <- processKnown(Rest, RecalList[c(1:22, 28, 29)], "KMD_H2", "z_H2", "H2_num", "H2", step_H2, c(11, 13, 33))
+    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", "H2", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
@@ -244,16 +274,16 @@ Recal <- function(df,
     isopeaks <- isopeaks[, c(1:4)]
     isopeaks <- setNames(isopeaks, c("mass", "Abundance", "RT", "Tag"))
     peaks <- setNames(peaks, c("mass", "Abundance", "RT"))
-    
+
     isopeaks$Tag2 <- "Iso"
     peaks$Tag <- "X"
     peaks$Tag2 <- "Mono"
 
-    
+
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:5)]
-    peaks <-  setNames(peaks, c("mass", "Abundance", "RT", "Tag", "Tag2"))
+    peaks <- setNames(peaks, c("mass", "Abundance", "RT", "Tag", "Tag2"))
 
 
     peaks <- peaks[c(2, 1, 3, 4, 5)]
@@ -278,8 +308,8 @@ Recal <- function(df,
 
     ############
     # Picking recalibrants with series
-    knownO <- RecalList[c(1:22, 25, 26)] #
 
+    knownO <- RecalList[c(1:22, 25, 26)]
     names(knownO)[2] <- "base_mass"
     Step2 <- merge(Rest, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
     Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
@@ -291,10 +321,9 @@ Recal <- function(df,
       sep = "_"
     )
     Step2 <- Step2[abs(Step2$O_num) <= step_O, ]
-
     Step2 <- Step2[-c(11, 13, 33)] #
 
-    knownH2 <- RecalList[c(1:22, 28, 29)] #
+    knownH2 <- RecalList[c(1:22, 28, 29)]
     names(knownH2)[2] <- "base_mass"
     Step3 <- merge(Rest, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
     Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
@@ -435,28 +464,22 @@ Recal <- function(df,
   #########################
   # Calculating the weights needed for recalibration and calculating the recalibrated masses.
   if (cols == 2) {
-    names(NewRecal)[2] <- "E_mass"
-    names(NewRecal)[3] <- "formula"
-    names(NewRecal)[4] <- "Th_mass"
+    colnames(NewRecal)[c(2, 3, 4)] <- c("E_mass", "formula", "Th_mass")
     peaks_dum <- data.frame(Abundance = -2, mass = -2, Tag = "X", Tag2 = "Y", Range = -1)
-    peaks_out <- data.frame(Abundance = -2, mass = -2, Tag = "X", Tag2 = "Y", Range = -1)
+    peaks_out <- peaks_dum
     Ej_dum <- data.frame(Ejsum = -2, Range = -2)
-    Ej_out <- data.frame(Ejsum = -2, Range = -2)
-    Dummy3 <- data.frame(Value = 1:max(NewRecal$Range))
-    Dummy3 <- as.numeric(nrow(Dummy3))
+    Ej_out <- Ej_dum
+    Dummy3 <- max(NewRecal$Range)
   }
 
 
   if (cols == 3) {
-    names(NewRecal)[2] <- "E_mass"
-    names(NewRecal)[4] <- "formula"
-    names(NewRecal)[5] <- "Th_mass"
+    colnames(NewRecal)[c(2, 4, 5)] <- c("E_mass", "formula", "Th_mass")
     peaks_dum <- data.frame(Abundance = -2, mass = -2, RT = -42, Tag = "X", Tag2 = "Y", Range = -1)
-    peaks_out <- data.frame(Abundance = -2, mass = -2, RT = -42, Tag = "X", Tag2 = "Y", Range = -1)
+    peaks_out <- peaks_dum
     Ej_dum <- data.frame(Ejsum = -2, Range = -2)
-    Ej_out <- data.frame(Ejsum = -2, Range = -2)
-    Dummy3 <- data.frame(Value = 1:max(NewRecal$Range))
-    Dummy3 <- as.numeric(nrow(Dummy3))
+    Ej_out <- Ej_dum
+    Dummy3 <- as.numeric(nrow(data.frame(Value = 1:max(NewRecal$Range))))
   }
   ############################
   peakshigh <- peaks[peaks$Range > max(NewRecal$Range), ]
@@ -510,13 +533,11 @@ Recal <- function(df,
 
   peaks <- rbind(peaks, peakshigh)
   # Separating the isotope and monoisotope masses for output.
-  isopeaks2 <- peaks[peaks$Tag2 != "Mono", ]
-  isopeaks2 <- isopeaks2[c(1, 2, 3, 4)]
-  names(isopeaks2)[2] <- "Iso_mass"
-  names(isopeaks2)[1] <- "Iso_Abund"
-  names(isopeaks2)[3] <- "Iso_RT"
-  peaks <- peaks[peaks$Tag2 == "Mono", ]
-  peaks <- peaks[c(1, 2, 3)]
+  isopeaks2 <- subset(peaks, Tag2 != "Mono", select = c(1, 2, 3, 4))
+  names(isopeaks2) <- c("Iso_Abund", "Iso_mass", "Iso_RT", "Tag2")
+
+  peaks <- subset(peaks, Tag2 == "Mono", select = c(1, 2, 3))
+  names(peaks) <- c("Abundance", "mass", "RT")
 
   ################################################
   # Recalibration for error comparison, calculating the average error before and after recalibration.
@@ -601,24 +622,6 @@ Recal <- function(df,
   Output <- list(Plot = MZ, Mono = peaks, Iso = isopeaks2, RecalList = RecalOut)
 }
 
-plot_spectrum <- function(plotpeak, RecalPlot) {
-  ggplot() +
-    geom_segment(data = plotpeak, size = 0.7, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
-    geom_segment(data = RecalPlot, size = 1.2, aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
-    theme_bw() +
-    labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
-    theme(
-      axis.title = element_text(size = 15, face = "bold"),
-      strip.text = element_text(size = 15, face = "bold"),
-      axis.text = element_text(size = 15, face = "bold"),
-      legend.title = element_text(face = "bold", size = 15),
-      legend.text = element_text(face = "bold", size = 15),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.x = element_blank(),
-      strip.background = element_blank(),
-      plot.title = element_text(size = 16, face = "bold")
-    )
-}
 #' Identifies canditate series for recalibration
 #'
 #' RecalList() takes the output from MFAssign() and/or MFAssignCHO()
