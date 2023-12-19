@@ -751,17 +751,17 @@ RecalList <- function(df) {
 }
 
 # AddCalculatedSummary function
-# 
+#
 # This function takes a data frame 'Recal' and calculates summary statistics
 # grouped by the 'Index' column. It adds columns for Minimum, Maximum, Mean,
 # Maximum Mass, Maximum Intensity, Second Maximum Intensity, and Second Maximum Mass.
-# 
+#
 # Args:
 #   Recal: The input data frame.
-# 
+#
 # Returns:
 #   A modified data frame with added calculated summary columns.
-# 
+#
 
 AddCalculatedSummary <- function(Recal) {
   Recal <- dplyr::group_by(Recal, Index)
@@ -781,21 +781,21 @@ AddCalculatedSummary <- function(Recal) {
 
 
 # FilterAndMerge function
-# 
+#
 # This function takes a data frame 'Recal', a vector of column indices 'column_indices',
 # and a column name 'column_name'. It performs the following steps:
 # 1. Selects specified columns from 'Recal'.
 # 2. Filters rows with complete cases for the specified column.
 # 3. Merges the original 'Recal' data frame with the filtered columns.
-# 
+#
 # Args:
 #   Recal: The input data frame.
 #   column_indices: A vector of column indices to be selected.
 #   column_name: The name of the column used for filtering.
-# 
+#
 # Returns:
 #   A modified data frame with selected columns and filtered rows.
-# 
+#
 
 FilterAndMerge <- function(Recal, column_indices, column_name) {
   selected_columns <- Recal[, c(1, column_indices)]
@@ -803,4 +803,3 @@ FilterAndMerge <- function(Recal, column_indices, column_name) {
   Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
   return(Recal)
 }
-
