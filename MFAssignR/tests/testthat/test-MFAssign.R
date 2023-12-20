@@ -30,7 +30,6 @@ patrick::with_parameters_test_that("MFAssign works",
       isopeaks = peaks$Iso,
       ionMode = mode
     )
-    save_expected(actual, mode)
     expected <- load_expected(mode)
 
     expect_equal(actual$Ambig, expected$Ambig)

@@ -7,10 +7,6 @@
 #'
 #' @param env environment from \code{\link{MFAssign}} function
 #'
-#' @examples
-#' env <- environment()
-#' FindCoreFormulae(env)
-#'
 #' @export
 FindCoreFormulae2 <- function(env) {
   if (Even(env$coreRNM) == FALSE) {
@@ -45,10 +41,6 @@ FindCoreFormulae2 <- function(env) {
 #' independently of that function.
 #'
 #' @param env environment from \code{\link{MFAssign}} function
-#'
-#' @examples
-#' env <- environment()
-#' FindCoreFormulae(env)
 #'
 #' @export
 FindCoreFormulae2_Halo <- function(env) {
