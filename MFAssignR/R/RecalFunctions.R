@@ -681,14 +681,8 @@ Recal <- function(df,
 #' making is left to the user.
 #'
 #' @param df data frame output from MFAssign() or MFAssignCHO()
-#'
 #' @return data frame
-#'
-#' @examples
-#' RecalList(df = Data)
 #' @export
-
-# df <- Unambig1
 RecalList <- function(df) {
   cols_to_remove_if_49 <- c(19:21)
   cols_to_remove_if_53 <- c(3, 20:22, 46, 49, 52)
@@ -750,19 +744,15 @@ RecalList <- function(df) {
   Recal <- Recal[!duplicated(Recal), ]
 }
 
-# AddCalculatedSummary function
-#
-# This function takes a data frame 'Recal' and calculates summary statistics
-# grouped by the 'Index' column. It adds columns for Minimum, Maximum, Mean,
-# Maximum Mass, Maximum Intensity, Second Maximum Intensity, and Second Maximum Mass.
-#
-# Args:
-#   Recal: The input data frame.
-#
-# Returns:
-#   A modified data frame with added calculated summary columns.
-#
-
+#' AddCalculatedSummary function
+#'
+#' This function takes a data frame 'Recal' and calculates summary statistics
+#' grouped by the 'Index' column. It adds columns for Minimum, Maximum, Mean,
+#' Maximum Mass, Maximum Intensity, Second Maximum Intensity, and Second Maximum Mass.
+#'
+#' @param Recal data frame
+#' @return A modified data frame with added calculated summary columns.
+#'
 AddCalculatedSummary <- function(Recal) {
   Recal <- dplyr::group_by(Recal, Index)
   Recal <- dplyr::mutate(Recal,
@@ -780,23 +770,20 @@ AddCalculatedSummary <- function(Recal) {
 }
 
 
-# FilterAndMerge function
-#
-# This function takes a data frame 'Recal', a vector of column indices 'column_indices',
-# and a column name 'column_name'. It performs the following steps:
-# 1. Selects specified columns from 'Recal'.
-# 2. Filters rows with complete cases for the specified column.
-# 3. Merges the original 'Recal' data frame with the filtered columns.
-#
-# Args:
-#   Recal: The input data frame.
-#   column_indices: A vector of column indices to be selected.
-#   column_name: The name of the column used for filtering.
-#
-# Returns:
-#   A modified data frame with selected columns and filtered rows.
-#
-
+#' FilterAndMerge function
+#'
+#' This function takes a data frame 'Recal', a vector of column indices 'column_indices',
+#' and a column name 'column_name'. It performs the following steps:
+#' 1. Selects specified columns from 'Recal'.
+#' 2. Filters rows with complete cases for the specified column.
+#' 3. Merges the original 'Recal' data frame with the filtered columns.
+#'
+#' @param Recal The input data frame.
+#' @param column_indices A vector of column indices to be selected.
+#' @param column_name The name of the column used for filtering.
+#'
+#' @return  A modified data frame with selected columns and filtered rows.
+#'
 FilterAndMerge <- function(Recal, column_indices, column_name) {
   selected_columns <- Recal[, c(1, column_indices)]
   selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
