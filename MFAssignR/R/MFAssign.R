@@ -508,19 +508,19 @@ records <- vector("list")
                 }
 
                 loop[CompFactorToInt2("Br")] <- unlist(loop[CompFactorToInt2("Br")]) + 1
-                if (loop[CompFactorToInt2("Br")] > HighMoles2("Br",Br=Brx)) {
+                if (loop[CompFactorToInt2("Br")] > HighMoles("Br",Br=Brx)) {
                   break
                 }
                     }
 
                     loop[CompFactorToInt2("Br81")] <- unlist(loop[CompFactorToInt2("Br81")]) + 1
-                    if (loop[CompFactorToInt2("Br81")] > HighMoles2("Br81",Br81=Br81x)) {
+                    if (loop[CompFactorToInt2("Br81")] > HighMoles("Br81",Br81=Br81x)) {
                       break
                     }
                   }
 
                   loop[CompFactorToInt2("I")] <- unlist(loop[CompFactorToInt2("I")]) + 1
-                  if (loop[CompFactorToInt2("I")] > HighMoles2("I",I=Ix)) {
+                  if (loop[CompFactorToInt2("I")] > HighMoles("I",I=Ix)) {
                     break
                   }
                 }
@@ -639,15 +639,15 @@ records <- vector("list")
                             max_H = C * 2 + 2, H_test = round(H / max_H, 1),
 
                             Senior2 = Pval + Nval + N15val + Valence("H")  +
-                              Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence2("Br") + Valence2("Br81") +
-                              Valence2("I"),
+                              Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence("Br") + Valence("Br81") +
+                              Valence("I"),
 
                             Senior3Atom = C + H + O + N + S + P + N15 + Cl + Cl37 + S34 + Br + Br81 + I,
 
                             Senior3Val = C*Valence("C") + H*Valence("H") + O*Valence("O") + N*Nval +
                               S*Sval + P*Pval + S34*S34val + Fl*Valence("Fl")+
-                              N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br *Valence2("Br")+
-                              Br81 *Valence2("Br81") + I * Valence2("I")
+                              N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br *Valence("Br")+
+                              Br81 *Valence("Br81") + I * Valence("I")
 
   )
 
@@ -1126,15 +1126,15 @@ records <- vector("list")
                             max_H = C * 2 + 2, H_test = round(H / max_H,1),
 
                             Senior2 = Pval + Nval + N15val + Valence("H")  +
-                              Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence2("Br") + Valence2("Br81") +
-                              Valence2("I"),
+                              Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence("Br") + Valence("Br81") +
+                              Valence("I"),
 
                             Senior3Atom = C + H + O + N + S + P + N15 + Cl + Cl37 + S34 + Br + Br81 + I,
 
                             Senior3Val = C*Valence("C") + H*Valence("H") + O*Valence("O") + N*Nval +
                               S*Sval + P*Pval + S34*S34val + Fl*Valence("Fl")+
-                              N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br * Valence2("Br") +
-                              Br81 * Valence2("Br81") + I * Valence2("I")
+                              N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br * Valence("Br") +
+                              Br81 * Valence("Br81") + I * Valence("I")
   )
 
   records1$NM <- ifelse(abs(floor(records1$Exp_mass)-records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass)-records1$Exp_mass) <= max_def,
@@ -1874,15 +1874,15 @@ records <- vector("list")
                              max_H = C * 2 + 2, H_test = round(H / max_H,1),
 
                              Senior2 = Pval + Nval + N15val + Valence("H")  +
-                               Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence2("Br") + Valence2("Br81") +
-                               Valence2("I"),
+                               Valence("Cl") + Valence("Cl37")+Valence("Fl") + Valence("Br") + Valence("Br81") +
+                               Valence("I"),
 
                              Senior3Atom = C + H + O + N + S + P + N15 + Cl + Cl37 + S34,
 
                              Senior3Val = C*Valence("C") + H*Valence("H") + O*Valence("O") + N*Nval +
                                S*Sval + P*Pval + S34*S34val + Fl*Valence("Fl")+
-                               N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br * Valence2("Br") +
-                               Br81 * Valence2("Br81") + I * Valence2("I")
+                               N15*N15val + Cl*Valence("Cl") + Cl37*Valence("Cl37") + Br * Valence("Br") +
+                               Br81 * Valence("Br81") + I * Valence("I")
   )
 
 
