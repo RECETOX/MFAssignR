@@ -681,79 +681,49 @@ Recal <- function(df,
 #' making is left to the user.
 #'
 #' @param df data frame output from MFAssign() or MFAssignCHO()
-#'
 #' @return data frame
-#'
-#' @examples
-#' RecalList(df = Data)
 #' @export
-
-# df <- Unambig1
 RecalList <- function(df) {
-  if (ncol(df) == 49) {
-    df <- df[-c(19:21)]
-  }
+  cols_to_remove_if_49 <- c(19:21)
+  cols_to_remove_if_53 <- c(3, 20:22, 46, 49, 52)
 
-  if (ncol(df) == 53) {
-    df <- df[-c(3, 20:22, 46, 49, 52)]
-  }
+  df <- df[, -which(
+    ncol(df) == 49 & seq_along(df) %in% cols_to_remove_if_49 |
+      ncol(df) == 53 & seq_along(df) %in% cols_to_remove_if_53
+  ), drop = FALSE]
 
 
   df$number <- 1
-  df$Adduct <- "H"
-  df$Adduct <- replace(df$Adduct, df$M > 0, "Na")
-  df$Adduct <- replace(df$Adduct, df$POE == 1, "OE")
-  df$Adduct <- replace(df$Adduct, df$NOE == 1, "OE")
+  df$Adduct <- ifelse(df$M > 0, "Na", "H")
+  df$Adduct[df$POE == 1 | df$NOE == 1] <- "OE"
   df$SeriesAdd <- paste(df$class, df$Adduct, sep = "_")
 
-  colnames(df)[colnames(df) == "exp_mass"] <- "Exp_mass"
-  colnames(df)[colnames(df) == "abundance"] <- "Abundance"
+  colnames(df) <- sub("exp_mass", "Exp_mass", colnames(df))
+  colnames(df) <- sub("abundance", "Abundance", colnames(df))
 
-  df1 <- subset(
-    aggregate(
-      number ~ SeriesAdd + DBE, df,
-      function(x) number <- sum(x, na.rm = TRUE)
-    ),
-    na.action = NULL
-  )
+  df1 <- na.omit(aggregate(number ~ SeriesAdd + DBE, df, sum, na.rm = TRUE))
 
-  longseries <- df1[order(-df1$number), ]
-  longseries$Index <- 1:nrow(longseries)
+  longseries <- df1 |>
+    dplyr::arrange(desc(number)) |>
+    dplyr::mutate(Index = dplyr::row_number())
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
 
-  Recal <- dplyr::group_by(Recal, Index)
-  Recal <- dplyr::mutate(Recal,
-    Min = min(Exp_mass), Max = max(Exp_mass), MInt = mean(Abundance),
-    Maxmass = ifelse(Abundance == max(Abundance), Exp_mass, NA), Maxint = max(Abundance),
-    Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
-  )
-
-  Maxmass1 <- Recal[c(1, 56)] # Select Maxmass
-  Maxmass1 <- Maxmass1[!is.na(Maxmass1$Maxmass), ]
-  Secmass1 <- Recal[c(1, 59)] # Select Secmass
-  Secmass1 <- Secmass1[!is.na(Secmass1$Secmass), ]
-
-  Recal <- merge(Recal, Maxmass1, by.x = c("Series"), by.y = c("Series"))
-  Recal <- merge(Recal, Secmass1, by.x = c("Series"), by.y = c("Series"))
+  Recal <- AddCalculatedSummary(Recal)
+  Recal <- FilterAndMerge(Recal, c(56), "Maxmass")
+  Recal <- FilterAndMerge(Recal, c(59), "Secmass")
 
   Recal <- Recal[Recal$number.y > 3, ]
   names(Recal)[56] <- "Maxmass"
   Recal <- Recal[!is.na(Recal$Maxmass), ]
-  Recal$M.window <- "a"
-  Recal$M.window[Recal$Maxmass > 0 & Recal$Maxmass < 200] <- "0-200"
-  Recal$M.window[Recal$Maxmass > 200 & Recal$Maxmass < 300] <- "200-300"
-  Recal$M.window[Recal$Maxmass > 300 & Recal$Maxmass < 400] <- "300-400"
-  Recal$M.window[Recal$Maxmass > 400 & Recal$Maxmass < 500] <- "400-500"
-  Recal$M.window[Recal$Maxmass > 500 & Recal$Maxmass < 600] <- "500-600"
-  Recal$M.window[Recal$Maxmass > 600 & Recal$Maxmass < 700] <- "600-700"
-  Recal$M.window[Recal$Maxmass > 700 & Recal$Maxmass < 800] <- "700-800"
-  Recal$M.window[Recal$Maxmass > 800] <- ">800"
 
-  Recal1 <- aggregate(
-    MInt ~ M.window, Recal,
-    function(x) number <- median(x, na.rm = TRUE)
+  breaks <- c(0, 200, 300, 400, 500, 600, 700, 800, Inf)
+  Recal$M.window <- cut(Recal$Maxmass, breaks,
+    labels = c("0-200", "200-300", "300-400", "400-500", "500-600", "600-700", "700-800", ">800"),
+    include.lowest = TRUE
   )
+
+  Recal1 <- aggregate(MInt ~ M.window, Recal, median, na.rm = TRUE)
   Recal <- merge(Recal, Recal1, by = "M.window")
 
   Recal$IntRel <- (Recal$MInt.x - Recal$MInt.y) / Recal$MInt.y * 100
@@ -764,15 +734,59 @@ RecalList <- function(df) {
   Recal$Max <- round(Recal$Max, 3)
   Recal$SerScor <- ((Recal$Max - Recal$Min) / 14 + 1) / Recal$number.y
   Recal <- tidyr::unite(Recal, Range, Min, Max, sep = "-")
-  Recal <- Recal[-c(5, 7, 8, 9, 10, 11, 12)]
-  names(Recal)[3] <- "Series Index"
-  names(Recal)[2] <- "Number Observed"
-  names(Recal)[4] <- "Mass Range"
-  names(Recal)[5] <- "Tall Peak"
-  names(Recal)[6] <- "Abundance Score"
-  names(Recal)[9] <- "Series Score"
-  names(Recal)[8] <- "Peak Distance"
-  names(Recal)[7] <- "Peak Score"
+
+  columns_to_drop <- c(5, 7, 8, 9, 10, 11, 12)
+  Recal <- Recal[, -columns_to_drop]
+
+  columns_to_rename <- c(2, 3, 4, 5, 6, 7, 8, 9)
+  new_column_names <- c("Number Observed", "Series Index", "Mass Range", "Tall Peak", "Abundance Score", "Peak Score", "Peak Distance", "Series Score")
+  names(Recal)[columns_to_rename] <- new_column_names
   Recal <- Recal[!duplicated(Recal), ]
-  Recal
+}
+
+#' AddCalculatedSummary function
+#'
+#' This function takes a data frame 'Recal' and calculates summary statistics
+#' grouped by the 'Index' column. It adds columns for Minimum, Maximum, Mean,
+#' Maximum Mass, Maximum Intensity, Second Maximum Intensity, and Second Maximum Mass.
+#'
+#' @param Recal data frame
+#' @return A modified data frame with added calculated summary columns.
+#'
+AddCalculatedSummary <- function(Recal) {
+  Recal <- dplyr::group_by(Recal, Index)
+  Recal <- dplyr::mutate(Recal,
+    Min = min(Exp_mass),
+    Max = max(Exp_mass),
+    MInt = mean(Abundance),
+    Maxmass = ifelse(Abundance == max(Abundance),
+      Exp_mass, NA
+    ),
+    Maxint = max(Abundance),
+    Secint = sort(Abundance, TRUE)[2],
+    Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
+  )
+  return(Recal)
+}
+
+
+#' FilterAndMerge function
+#'
+#' This function takes a data frame 'Recal', a vector of column indices 'column_indices',
+#' and a column name 'column_name'. It performs the following steps:
+#' 1. Selects specified columns from 'Recal'.
+#' 2. Filters rows with complete cases for the specified column.
+#' 3. Merges the original 'Recal' data frame with the filtered columns.
+#'
+#' @param Recal The input data frame.
+#' @param column_indices A vector of column indices to be selected.
+#' @param column_name The name of the column used for filtering.
+#'
+#' @return  A modified data frame with selected columns and filtered rows.
+#'
+FilterAndMerge <- function(Recal, column_indices, column_name) {
+  selected_columns <- Recal[, c(1, column_indices)]
+  selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
+  Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+  return(Recal)
 }
