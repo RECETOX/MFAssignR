@@ -81,6 +81,41 @@ bind_and_filter_data <- function(data1, data2, remove_na) {
   return(result)
 }
 
+#' Combines isotopes
+#' This function combines isotopes based on experimental mass.
+#' @param Isotopes data frame:
+#' The input data frame containing isotopes.
+#' @return data frame:
+#'  The combined data frame.
+combine_isotopes <- function(Isotopes) {
+  Isotopes <- Isotopes[Isotopes$Exp_mass > 0, ]
+  Isotopes$order <- 1:nrow(Isotopes)
+
+  Isotopes <- Isotopes[order(Isotopes$order), ]
+  Isotopes$Dups1 <- duplicated(Isotopes$Exp_mass)
+
+  Isotopes <- Isotopes[order(-Isotopes$order), ]
+  Isotopes$Dups2 <- duplicated(Isotopes$Exp_mass)
+
+  Doubles <- Isotopes[(Isotopes$Dups1 == TRUE | Isotopes$Dups2 == TRUE), ]
+  DS34 <- Doubles[Doubles$Tag == "S34", ]
+  DC13 <- Doubles[Doubles$Tag != "S34", ]
+
+  NewDub <- merge(DS34, DC13, by = "Exp_mass")
+  NewDub <- NewDub[c(1, 2, 3, 4, 10)]
+  NewDub$Tag <- paste(NewDub$Tag.y, NewDub$Tag.x, sep = "_")
+
+  NewDub <- NewDub[c(1, 2, 3, 6)]
+
+  names(NewDub)[2:3] <- c("Abundance", "RT")
+
+  Singles <- Isotopes[(Isotopes$Dups1 == FALSE & Isotopes$Dups2 == FALSE), ]
+  Singles <- Singles[c(1, 2, 3, 4)]
+
+  Iso_Out <- rbind(Singles, NewDub)
+  return(Iso_Out)
+}
+
 #' Identifies and separates likely isotopic masses from monoisotopic masses
 #'
 #' IsoFiltR separates likely isotopic masses from monoisotopic masses in a
@@ -167,21 +202,14 @@ IsoFiltR <- function(
   }
 
   # End of Sulfur Section
-
-  Dummy2 <- data.frame(Exp_mass = -42, Abundance = -42, RT = 0)
-
-  IsoOutC1_final <- bind_and_filter_data(IsoOutC1_final, Dummy2, FALSE)
-  IsoOutC2_final <- bind_and_filter_data(IsoOutC2_final, Dummy2, FALSE)
-  MonoOutC_final <- bind_and_filter_data(MonoOutC_final, Dummy2, FALSE)
+  IsoOutC1_final <- unique(IsoOutC1_final)
+  IsoOutC2_final <- unique(IsoOutC2_final)
+  MonoOutC_final <- unique(MonoOutC_final)
 
   IsoOutC1_final$Tag <- "C13"
   IsoOutC2_final$Tag <- "2C13"
   MonoOutC_final$Tag <- "C"
-
-  MonoOutS_final <- rbind(MonoOutS_final, Dummy2)
   MonoOutS_final$Tag <- "S"
-
-  IsoOutS_final <- rbind(IsoOutS_final, Dummy2)
   IsoOutS_final$Tag <- "S34"
 
   # Sulfur Check
@@ -198,45 +226,21 @@ IsoFiltR <- function(
     sulfur_check_result$IsoOutC2_final,
     IsoOutS_final
   )
-  Isotopes <- Isotopes[Isotopes$Exp_mass > 0, ]
-  Isotopes$order <- 1:nrow(Isotopes)
 
-  Isotopes <- Isotopes[order(Isotopes$order), ]
-  Isotopes$Dups1 <- duplicated(Isotopes$Exp_mass)
-
-  Isotopes <- Isotopes[order(-Isotopes$order), ]
-  Isotopes$Dups2 <- duplicated(Isotopes$Exp_mass)
-
-  Doubles <- Isotopes[(Isotopes$Dups1 == TRUE | Isotopes$Dups2 == TRUE), ]
-  DS34 <- Doubles[Doubles$Tag == "S34", ]
-  DC13 <- Doubles[Doubles$Tag != "S34", ]
-
-  NewDub <- merge(DS34, DC13, by = "Exp_mass")
-  NewDub <- NewDub[c(1, 2, 3, 4, 10)]
-  NewDub$Tag <- paste(NewDub$Tag.y, NewDub$Tag.x, sep = "_")
-
-  NewDub <- NewDub[c(1, 2, 3, 6)]
-
-  names(NewDub)[2:3] <- c("Abundance", "RT")
-
-  Singles <- Isotopes[(Isotopes$Dups1 == FALSE & Isotopes$Dups2 == FALSE), ]
-  Singles <- Singles[c(1, 2, 3, 4)]
-
-  Iso_Out <- rbind(Singles, NewDub)
+  Iso_Out <- tidyr::drop_na(combine_isotopes(Isotopes))
 
   # This section organizes the data and helps to ensure there are no peaks being considered as
   # both monoisotopic and isotopic peaks.
   Mono_out <- rbind(MonoOutC_final, sulfur_check_result$MonoOutS_final)
 
   Dup_mass <- merge(Iso_Out, Mono_out, by = "Exp_mass")
-  Dup_rem <- Dup_mass[c(1, 2, 3)]
 
+  Dup_rem <- Dup_mass[c(1, 2, 3)]
   Iso_Sup <- Dup_mass[c(1, 2, 3, 4)]
 
   names(Iso_Sup)[2:4] <- c("Abundance", "RT", "Tag")
 
   Iso_Out <- merge(Iso_Out, Dup_rem, by = "Exp_mass", all = TRUE)
-
   Iso_Out <- Iso_Out[is.na(Iso_Out$Abundance.x), ]
   Iso_Out <- Iso_Out[c(1, 2, 3, 4)]
 
