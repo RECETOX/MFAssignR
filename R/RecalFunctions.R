@@ -1,3 +1,95 @@
+#' Plot Spectrum Function
+#'
+#' This function generates a mass spectrum plot using ggplot2.
+#'
+#' @param plotpeak A data frame containing information for the first set of segments.
+#' @param RecalPlot A data frame containing information for the second set of segments.
+#'
+#' @return A ggplot object representing the mass spectrum plot.
+plot_spectrum <- function(plotpeak, RecalPlot) {
+  ggplot() +
+    geom_segment(data = plotpeak, size = 0.7, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
+    geom_segment(data = RecalPlot, size = 1.2, aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
+    theme_bw() +
+    labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
+    theme(
+      axis.title = element_text(size = 15, face = "bold"),
+      strip.text = element_text(size = 15, face = "bold"),
+      axis.text = element_text(size = 15, face = "bold"),
+      legend.title = element_text(face = "bold", size = 15),
+      legend.text = element_text(face = "bold", size = 15),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.x = element_blank(),
+      strip.background = element_blank(),
+      plot.title = element_text(size = 16, face = "bold")
+    )
+}
+
+#' Process Mass List
+#'
+#' This function processes a data frame containing mass-related information.
+#'
+#' @param data A data frame containing at least the "Exp_mass" column.
+#' @return The input data frame with additional calculated columns.
+#'
+#' @details
+#' The function calculates the following columns:
+#'   - NM: Rounded Exp_mass
+#'   - KM_O: Exp_mass * (16 / 15.9949146223)
+#'   - KMD_O: Rounded NM - KM_O
+#'   - z_O: Rounded Exp_mass %% 16 - 16
+#'   - KM_H2: Exp_mass * (2 / 2.01565)
+#'   - KMD_H2: Rounded NM - KM_H2
+#'   - z_H2: Rounded Exp_mass %% 2 - 2
+#'
+#' @examples
+#' data <- data.frame(Exp_mass = c(100, 150, 200))
+#' processed_data <- processMassList(data)
+#'
+processMassList <- function(data) {
+  data$NM <- round(data$Exp_mass)
+
+  # Process O
+  data$KM_O <- data$Exp_mass * (16 / 15.9949146223)
+  data$KMD_O <- round(data$NM - data$KM_O, 3)
+  data$z_O <- round(data$Exp_mass) %% 16 - 16
+
+  # Process H2
+  data$KM_H2 <- data$Exp_mass * (2 / 2.01565)
+  data$KMD_H2 <- round(data$NM - data$KM_H2, 3)
+  data$z_H2 <- round(data$Exp_mass) %% 2 - 2
+
+  return(data)
+}
+
+#' Process Known Compounds
+#'
+#' This function processes known compounds by merging them with a rest dataset and
+#' updating abundance and type columns based on specified columns and limits.
+#'
+#' @param rest The dataset containing the rest of the compounds.
+#' @param known The dataset containing known compounds.
+#' @param kmd_col The column name for KMD in both datasets.
+#' @param z_col The column name for Z in both datasets.
+#' @param num_col The column name to store the calculated number of compounds.
+#' @param type The column name to store the type of compound.
+#' @param step_limit The limit for considering compounds.
+#' @param remove_indices Indices of rows to be removed from the result.
+#'
+#' @return A processed dataset with updated abundance and type columns.
+processKnown <- function(rest, known, kmd_col, z_col, num_col, type, step_limit, remove_indices) {
+  names(known)[2] <- "base_mass"
+
+  step_result <- merge(rest, known, by.x = c(kmd_col, z_col), by.y = c(kmd_col, z_col))
+  step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / step_limit)
+  step_result[[type]] <- step_result[[type]] + step_result[[num_col]]
+  step_result$Type <- type
+  step_result$form <- paste(step_result[c("C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE")], sep = "_")
+  step_result <- step_result[abs(step_result[[num_col]]) <= step_limit, ]
+  step_result <- step_result[-remove_indices, ]
+  return(step_result)
+}
+
 #' Generates a plot to visualize recalibrant series, recalibrates two mass lists,
 #' and produces a list of the chosen recalibrants.
 #'
@@ -50,13 +142,7 @@
 #' @return list(MZ, Mono, Iso, RecalOut) contains the mass spectrum (MZ), recalibrated "Mono" data frame,
 #'  recalibrated "Iso" data frame, and the recalibrants list (RecalOut)
 #'
-#' Recal(
-#'   df = Data, peaks = Mono, isopeaks = Iso, mode = "pos", SN = 300, series1 = "O4_Na_2",
-#'   series2 = "O4_H_8", series3 = "O6_Na_8"
-#' )
 #' @export
-
-
 Recal <- function(df,
                   peaks,
                   isopeaks = "none",
@@ -90,36 +176,25 @@ Recal <- function(df,
   df$Adduct <- replace(df$Adduct, df$NOE == 1, "OE")
   df$series <- paste(df$class, df$Adduct, df$DBE, sep = "_")
   df$mode <- mode
-  names(df)[1] <- "Abundance"
-  names(df)[2] <- "Exp_mass"
+  names(df)[1:2] <- c("Abundance", "Exp_mass")
 
   if (cols == 2) {
     isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, Tag = "X"), isopeaks) # Change 12/6/19
     # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:3)]
-    names(isopeaks)[1] <- "mass"
-    names(isopeaks)[2] <- "Abundance"
-    names(isopeaks)[3] <- "Tag"
-    names
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    peaks$Tag <- "X"
-    peaks$Tag2 <- "Mono"
+    isopeaks <- setNames(isopeaks, c("mass", "Abundance", "Tag"))
+    peaks <- setNames(peaks, c("Abundance", "mass"))
 
     isopeaks$Tag2 <- "Iso"
+    peaks$Tag <- "X"
+    peaks$Tag2 <- "Mono"
 
     # peaks <- if(isopeaks != "none") rbind(peaks, isopeaks) else peaks
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:4)]
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "Tag"
-    names(peaks)[4] <- "Tag2"
-
-    peaks <- peaks[c(2, 1, 3, 4)]
-    # isodummy <- data.frame
+    peaks <- setNames(peaks[c(2, 1, 3, 4)], c("Abundance", "mass", "Tag", "Tag2"))
     isopeaks <- isopeaks[c(2, 1, 3, 4)]
 
     # Merges recalibrant list to df in order to determine which recalibrants are in the data frame.
@@ -134,58 +209,18 @@ Recal <- function(df,
       "Abundance", "Exp_mass", "C", "H", "O", "N", "S", "P", "E",
       "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z", "C13_mass"
     )]
-    RecalList$NM <- round(RecalList$Exp_mass)
-
-    RecalList$KM_O <- RecalList$Exp_mass * (16 / 15.9949146223)
-    RecalList$KMD_O <- round(RecalList$NM - RecalList$KM_O, 3)
-    RecalList$z_O <- round(RecalList$Exp_mass) %% 16 - 16
-
-    RecalList$KM_H2 <- RecalList$Exp_mass * (2 / 2.01565)
-    RecalList$KMD_H2 <- round(RecalList$NM - RecalList$KM_H2, 3)
-    RecalList$z_H2 <- round(RecalList$Exp_mass) %% 2 - 2
+    RecalList <- processMassList(RecalList)
 
     Rest <- df[c("Abundance", "Exp_mass")]
-    Rest$NM <- round(Rest$Exp_mass)
-
-    Rest$KM_O <- Rest$Exp_mass * (16 / 15.9949146223)
-    Rest$KMD_O <- round(Rest$NM - Rest$KM_O, 3)
-    Rest$z_O <- round(Rest$Exp_mass) %% 16 - 16
-
-    Rest$KM_H2 <- Rest$Exp_mass * (2 / 2.01565)
-    Rest$KMD_H2 <- round(Rest$NM - Rest$KM_H2, 3)
-    Rest$z_H2 <- round(Rest$Exp_mass) %% 2 - 2
+    Rest <- processMassList(Rest)
 
     ############
     # Picking recalibrants with series
-    knownO <- RecalList[c(1:21, 24, 25)]
+    # Process known_O
+    Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", "O", step_O, c(10, 31))
 
-    names(knownO)[2] <- "base_mass"
-    Step2 <- merge(Rest, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-    Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
-    Step2$O <- Step2$O + Step2$O_num
-    Step2$Type <- "O"
-    Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
-      Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
-      Step2$POE, Step2$NOE,
-      sep = "_"
-    )
-    Step2 <- Step2[abs(Step2$O_num) <= step_O, ]
-
-    Step2 <- Step2[-c(10, 31)]
-
-    knownH2 <- RecalList[c(1:21, 27, 28)]
-    names(knownH2)[2] <- "base_mass"
-    Step3 <- merge(Rest, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-    Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
-    Step3$H <- Step3$H + 2 * Step3$H2_num
-    Step3$Type <- "H2"
-    Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
-      Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
-      Step3$POE, Step3$NOE,
-      sep = "_"
-    )
-    Step3 <- Step3[abs(Step3$H2_num) <= step_H2, ]
-    Step3 <- Step3[-c(10, 31)]
+    # Process known_H2
+    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", "H2", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
@@ -199,7 +234,6 @@ Recal <- function(df,
 
     FinalRecal2 <- dplyr::group_by(NewRecal, Bin)
     # FinalRecal2 <- dplyr::top_n(FinalRecal, obs, Abundance)
-
 
     NewRecal_mono <- FinalRecal2[c(1:4)] # Changed 5/13/20
     NewRecal_iso <- FinalRecal2[c(5, 3, 4, 6)] # Changed 5/13/20
@@ -216,28 +250,19 @@ Recal <- function(df,
 
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:4)]
-    names(isopeaks)[1] <- "mass"
-    names(isopeaks)[2] <- "Abundance"
-    names(isopeaks)[3] <- "RT"
-    names(isopeaks)[4] <- "Tag"
-
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "RT"
-    peaks$Tag <- "X"
-    peaks$Tag2 <- "Mono"
+    isopeaks <- setNames(isopeaks, c("mass", "Abundance", "RT", "Tag"))
+    peaks <- setNames(peaks, c("mass", "Abundance", "RT"))
 
     isopeaks$Tag2 <- "Iso"
+    peaks$Tag <- "X"
+    peaks$Tag2 <- "Mono"
 
 
     peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:5)]
-    names(peaks)[1] <- "mass"
-    names(peaks)[2] <- "Abundance"
-    names(peaks)[3] <- "RT"
-    names(peaks)[4] <- "Tag"
-    names(peaks)[5] <- "Tag2"
+    peaks <- setNames(peaks, c("mass", "Abundance", "RT", "Tag", "Tag2"))
+
 
     peaks <- peaks[c(2, 1, 3, 4, 5)]
     # isodummy <- data.frame
@@ -253,31 +278,16 @@ Recal <- function(df,
       "Abundance", "Exp_mass", "RT", "C", "H", "O", "N", "S", "P", "E",
       "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z", "C13_mass"
     )]
-    RecalList$NM <- round(RecalList$Exp_mass)
-
-    RecalList$KM_O <- RecalList$Exp_mass * (16 / 15.9949146223)
-    RecalList$KMD_O <- round(RecalList$NM - RecalList$KM_O, 3)
-    RecalList$z_O <- round(RecalList$Exp_mass) %% 16 - 16
-
-    RecalList$KM_H2 <- RecalList$Exp_mass * (2 / 2.01565)
-    RecalList$KMD_H2 <- round(RecalList$NM - RecalList$KM_H2, 3)
-    RecalList$z_H2 <- round(RecalList$Exp_mass) %% 2 - 2
+    RecalList <- processMassList(RecalList)
 
     Rest <- df[c("Abundance", "Exp_mass", "RT")]
-    Rest$NM <- round(Rest$Exp_mass)
-
-    Rest$KM_O <- Rest$Exp_mass * (16 / 15.9949146223)
-    Rest$KMD_O <- round(Rest$NM - Rest$KM_O, 3)
-    Rest$z_O <- round(Rest$Exp_mass) %% 16 - 16
-
-    Rest$KM_H2 <- Rest$Exp_mass * (2 / 2.01565)
-    Rest$KMD_H2 <- round(Rest$NM - Rest$KM_H2, 3)
-    Rest$z_H2 <- round(Rest$Exp_mass) %% 2 - 2
+    # Assuming RecalList is your data frame
+    Rest <- processMassList(Rest)
 
     ############
     # Picking recalibrants with series
-    knownO <- RecalList[c(1:22, 25, 26)] #
 
+    knownO <- RecalList[c(1:22, 25, 26)]
     names(knownO)[2] <- "base_mass"
     Step2 <- merge(Rest, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
     Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
@@ -289,10 +299,9 @@ Recal <- function(df,
       sep = "_"
     )
     Step2 <- Step2[abs(Step2$O_num) <= step_O, ]
-
     Step2 <- Step2[-c(11, 13, 33)] #
 
-    knownH2 <- RecalList[c(1:22, 28, 29)] #
+    knownH2 <- RecalList[c(1:22, 28, 29)]
     names(knownH2)[2] <- "base_mass"
     Step3 <- merge(Rest, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
     Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
@@ -433,28 +442,22 @@ Recal <- function(df,
   #########################
   # Calculating the weights needed for recalibration and calculating the recalibrated masses.
   if (cols == 2) {
-    names(NewRecal)[2] <- "E_mass"
-    names(NewRecal)[3] <- "formula"
-    names(NewRecal)[4] <- "Th_mass"
+    colnames(NewRecal)[c(2, 3, 4)] <- c("E_mass", "formula", "Th_mass")
     peaks_dum <- data.frame(Abundance = -2, mass = -2, Tag = "X", Tag2 = "Y", Range = -1)
-    peaks_out <- data.frame(Abundance = -2, mass = -2, Tag = "X", Tag2 = "Y", Range = -1)
+    peaks_out <- peaks_dum
     Ej_dum <- data.frame(Ejsum = -2, Range = -2)
-    Ej_out <- data.frame(Ejsum = -2, Range = -2)
-    Dummy3 <- data.frame(Value = 1:max(NewRecal$Range))
-    Dummy3 <- as.numeric(nrow(Dummy3))
+    Ej_out <- Ej_dum
+    Dummy3 <- max(NewRecal$Range)
   }
 
 
   if (cols == 3) {
-    names(NewRecal)[2] <- "E_mass"
-    names(NewRecal)[4] <- "formula"
-    names(NewRecal)[5] <- "Th_mass"
+    colnames(NewRecal)[c(2, 4, 5)] <- c("E_mass", "formula", "Th_mass")
     peaks_dum <- data.frame(Abundance = -2, mass = -2, RT = -42, Tag = "X", Tag2 = "Y", Range = -1)
-    peaks_out <- data.frame(Abundance = -2, mass = -2, RT = -42, Tag = "X", Tag2 = "Y", Range = -1)
+    peaks_out <- peaks_dum
     Ej_dum <- data.frame(Ejsum = -2, Range = -2)
-    Ej_out <- data.frame(Ejsum = -2, Range = -2)
-    Dummy3 <- data.frame(Value = 1:max(NewRecal$Range))
-    Dummy3 <- as.numeric(nrow(Dummy3))
+    Ej_out <- Ej_dum
+    Dummy3 <- as.numeric(nrow(data.frame(Value = 1:max(NewRecal$Range))))
   }
   ############################
   peakshigh <- peaks[peaks$Range > max(NewRecal$Range), ]
@@ -508,13 +511,11 @@ Recal <- function(df,
 
   peaks <- rbind(peaks, peakshigh)
   # Separating the isotope and monoisotope masses for output.
-  isopeaks2 <- peaks[peaks$Tag2 != "Mono", ]
-  isopeaks2 <- isopeaks2[c(1, 2, 3, 4)]
-  names(isopeaks2)[2] <- "Iso_mass"
-  names(isopeaks2)[1] <- "Iso_Abund"
-  names(isopeaks2)[3] <- "Iso_RT"
-  peaks <- peaks[peaks$Tag2 == "Mono", ]
-  peaks <- peaks[c(1, 2, 3)]
+  isopeaks2 <- subset(peaks, Tag2 != "Mono", select = c(1, 2, 3, 4))
+  names(isopeaks2) <- c("Iso_Abund", "Iso_mass", "Iso_RT", "Tag2")
+
+  peaks <- subset(peaks, Tag2 == "Mono", select = c(1, 2, 3))
+  names(peaks) <- c("Abundance", "mass", "RT")
 
   ################################################
   # Recalibration for error comparison, calculating the average error before and after recalibration.
@@ -558,75 +559,42 @@ Recal <- function(df,
   if (cols == 3) {
     AbundM <- df[c("Exp_mass", "Abundance", "RT")]
     AbundI <- df[c("C13_mass", "C13_abund", "C13_RT")]
-    names(AbundI)[1] <- "Exp_mass"
-    names(AbundI)[2] <- "Abundance"
-    names(AbundI)[3] <- "RT"
+    colnames(AbundI) <- c("Exp_mass", "Abundance", "RT")
     Abund <- rbind(AbundM, AbundI)
     Abund <- Abund[Abund$Abundance > 0, ]
 
     RecalPlot <- merge(RecalOut, Abund, by.x = c("Exp_mass", "Abundance", "RT"), by.y = c("Exp_mass", "Abundance", "RT"))
 
     RecalOut <- RecalOut[c(3, 5, 6, 9, 10)]
+
+    # Preparing the final output of the function, the recalibrants list.
+    peaks <- setNames(peaks[c(2, 1, 3)], c("exp_mass", "abundance", names(peaks)[3]))
+    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3, 4)], c("iso_mass", "iso_abund", names(isopeaks2)[3], "tag"))
+    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
 
   if (cols == 2) {
     AbundM <- df[c("Exp_mass", "Abundance")]
     AbundI <- df[c("C13_mass", "C13_abund")]
-    names(AbundI)[1] <- "Exp_mass"
-    names(AbundI)[2] <- "Abundance"
+    names(AbundI) <- c("Exp_mass", "Abundance")
     Abund <- rbind(AbundM, AbundI)
     Abund <- Abund[Abund$Abundance > 0, ]
 
     RecalPlot <- merge(RecalOut, Abund, by.x = c("Exp_mass", "Abundance"), by.y = c("Exp_mass", "Abundance"))
 
     RecalOut <- RecalOut[c(2, 3, 4, 7, 8)]
+
+    # Preparing the final output of the function, the recalibrants list.
+    peaks <- setNames(peaks[c(2, 1)], c("exp_mass", "abundance"))
+    isopeaks2 <- setNames(isopeaks2[c(2, 1, 3)], c("iso_mass", "iso_abund", "tag"))
+    names(RecalOut)[c(1, 2)] <- c("abundance", "exp_mass")
   }
 
   # Plot highlighting the recalibrant ions for qualitative assessment.
-  MZ <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = plotpeak, size = 0.7, ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance"), alpha = 0.3, color = "grey57") +
-    ggplot2::geom_segment(data = RecalPlot, size = 1.2, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "Abundance"), color = "blue") +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "Series") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 15),
-      legend.text = ggplot2::element_text(face = "bold", size = 15), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-  # Preparing the final output of the function, the recalibrants list.
-
-
-  if (cols == 3) {
-    peaks <- peaks[c(2, 1, 3)]
-    names(peaks)[2] <- "abundance"
-    names(peaks)[1] <- "exp_mass"
-    isopeaks2 <- isopeaks2[c(2, 1, 3, 4)]
-    names(isopeaks2)[2] <- "iso_abund"
-    names(isopeaks2)[1] <- "iso_mass"
-    names(isopeaks2)[4] <- "tag"
-    names(RecalOut)[1] <- "abundance"
-    names(RecalOut)[2] <- "exp_mass"
-  }
-
-  if (cols == 2) {
-    peaks <- peaks[c(2, 1)]
-    names(peaks)[2] <- "abundance"
-    names(peaks)[1] <- "exp_mass"
-    isopeaks2 <- isopeaks2[c(2, 1, 3)]
-    names(isopeaks2)[2] <- "iso_abund"
-    names(isopeaks2)[1] <- "iso_mass"
-    names(isopeaks2)[3] <- "tag"
-    names(RecalOut)[1] <- "abundance"
-    names(RecalOut)[2] <- "exp_mass"
-  }
+  MZ <- plot_spectrum(plotpeak, RecalPlot)
 
   Output <- list(Plot = MZ, Mono = peaks, Iso = isopeaks2, RecalList = RecalOut)
-  Output
 }
-
 
 #' Identifies canditate series for recalibration
 #'
@@ -675,77 +643,49 @@ Recal <- function(df,
 #' making is left to the user.
 #'
 #' @param df data frame output from MFAssign() or MFAssignCHO()
-#'
 #' @return data frame
-#'
 #' @export
-
-# df <- Unambig1
 RecalList <- function(df) {
-  if (ncol(df) == 49) {
-    df <- df[-c(19:21)]
-  }
+  cols_to_remove_if_49 <- c(19:21)
+  cols_to_remove_if_53 <- c(3, 20:22, 46, 49, 52)
 
-  if (ncol(df) == 53) {
-    df <- df[-c(3, 20:22, 46, 49, 52)]
-  }
+  df <- df[, -which(
+    ncol(df) == 49 & seq_along(df) %in% cols_to_remove_if_49 |
+      ncol(df) == 53 & seq_along(df) %in% cols_to_remove_if_53
+  ), drop = FALSE]
 
 
   df$number <- 1
-  df$Adduct <- "H"
-  df$Adduct <- replace(df$Adduct, df$M > 0, "Na")
-  df$Adduct <- replace(df$Adduct, df$POE == 1, "OE")
-  df$Adduct <- replace(df$Adduct, df$NOE == 1, "OE")
+  df$Adduct <- ifelse(df$M > 0, "Na", "H")
+  df$Adduct[df$POE == 1 | df$NOE == 1] <- "OE"
   df$SeriesAdd <- paste(df$class, df$Adduct, sep = "_")
 
-  colnames(df)[colnames(df) == "exp_mass"] <- "Exp_mass"
-  colnames(df)[colnames(df) == "abundance"] <- "Abundance"
+  colnames(df) <- sub("exp_mass", "Exp_mass", colnames(df))
+  colnames(df) <- sub("abundance", "Abundance", colnames(df))
 
-  df1 <- subset(
-    aggregate(
-      number ~ SeriesAdd + DBE, df,
-      function(x) number <- sum(x, na.rm = TRUE)
-    ),
-    na.action = NULL
-  )
+  df1 <- na.omit(aggregate(number ~ SeriesAdd + DBE, df, sum, na.rm = TRUE))
 
-  longseries <- df1[order(-df1$number), ]
-  longseries$Index <- 1:nrow(longseries)
+  longseries <- df1 |>
+    dplyr::arrange(desc(number)) |>
+    dplyr::mutate(Index = dplyr::row_number())
   Recal <- merge(df, longseries, by.x = c("SeriesAdd", "DBE"), by.y = c("SeriesAdd", "DBE"))
   Recal <- tidyr::unite(Recal, Series, SeriesAdd, DBE, sep = "_", remove = FALSE)
 
-  Recal <- dplyr::group_by(Recal, Index)
-  Recal <- dplyr::mutate(Recal,
-    Min = min(Exp_mass), Max = max(Exp_mass), MInt = mean(Abundance),
-    Maxmass = ifelse(Abundance == max(Abundance), Exp_mass, NA), Maxint = max(Abundance),
-    Secint = sort(Abundance, TRUE)[2], Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
-  )
-
-  Maxmass1 <- Recal[c(1, 56)] # Select Maxmass
-  Maxmass1 <- Maxmass1[!is.na(Maxmass1$Maxmass), ]
-  Secmass1 <- Recal[c(1, 59)] # Select Secmass
-  Secmass1 <- Secmass1[!is.na(Secmass1$Secmass), ]
-
-  Recal <- merge(Recal, Maxmass1, by.x = c("Series"), by.y = c("Series"))
-  Recal <- merge(Recal, Secmass1, by.x = c("Series"), by.y = c("Series"))
+  Recal <- AddCalculatedSummary(Recal)
+  Recal <- FilterAndMerge(Recal, c(56), "Maxmass")
+  Recal <- FilterAndMerge(Recal, c(59), "Secmass")
 
   Recal <- Recal[Recal$number.y > 3, ]
   names(Recal)[56] <- "Maxmass"
   Recal <- Recal[!is.na(Recal$Maxmass), ]
-  Recal$M.window <- "a"
-  Recal$M.window[Recal$Maxmass > 0 & Recal$Maxmass < 200] <- "0-200"
-  Recal$M.window[Recal$Maxmass > 200 & Recal$Maxmass < 300] <- "200-300"
-  Recal$M.window[Recal$Maxmass > 300 & Recal$Maxmass < 400] <- "300-400"
-  Recal$M.window[Recal$Maxmass > 400 & Recal$Maxmass < 500] <- "400-500"
-  Recal$M.window[Recal$Maxmass > 500 & Recal$Maxmass < 600] <- "500-600"
-  Recal$M.window[Recal$Maxmass > 600 & Recal$Maxmass < 700] <- "600-700"
-  Recal$M.window[Recal$Maxmass > 700 & Recal$Maxmass < 800] <- "700-800"
-  Recal$M.window[Recal$Maxmass > 800] <- ">800"
 
-  Recal1 <- aggregate(
-    MInt ~ M.window, Recal,
-    function(x) number <- median(x, na.rm = TRUE)
+  breaks <- c(0, 200, 300, 400, 500, 600, 700, 800, Inf)
+  Recal$M.window <- cut(Recal$Maxmass, breaks,
+    labels = c("0-200", "200-300", "300-400", "400-500", "500-600", "600-700", "700-800", ">800"),
+    include.lowest = TRUE
   )
+
+  Recal1 <- aggregate(MInt ~ M.window, Recal, median, na.rm = TRUE)
   Recal <- merge(Recal, Recal1, by = "M.window")
 
   Recal$IntRel <- (Recal$MInt.x - Recal$MInt.y) / Recal$MInt.y * 100
@@ -756,15 +696,59 @@ RecalList <- function(df) {
   Recal$Max <- round(Recal$Max, 3)
   Recal$SerScor <- ((Recal$Max - Recal$Min) / 14 + 1) / Recal$number.y
   Recal <- tidyr::unite(Recal, Range, Min, Max, sep = "-")
-  Recal <- Recal[-c(5, 7, 8, 9, 10, 11, 12)]
-  names(Recal)[3] <- "Series Index"
-  names(Recal)[2] <- "Number Observed"
-  names(Recal)[4] <- "Mass Range"
-  names(Recal)[5] <- "Tall Peak"
-  names(Recal)[6] <- "Abundance Score"
-  names(Recal)[9] <- "Series Score"
-  names(Recal)[8] <- "Peak Distance"
-  names(Recal)[7] <- "Peak Score"
+
+  columns_to_drop <- c(5, 7, 8, 9, 10, 11, 12)
+  Recal <- Recal[, -columns_to_drop]
+
+  columns_to_rename <- c(2, 3, 4, 5, 6, 7, 8, 9)
+  new_column_names <- c("Number Observed", "Series Index", "Mass Range", "Tall Peak", "Abundance Score", "Peak Score", "Peak Distance", "Series Score")
+  names(Recal)[columns_to_rename] <- new_column_names
   Recal <- Recal[!duplicated(Recal), ]
-  Recal
+}
+
+#' AddCalculatedSummary function
+#'
+#' This function takes a data frame 'Recal' and calculates summary statistics
+#' grouped by the 'Index' column. It adds columns for Minimum, Maximum, Mean,
+#' Maximum Mass, Maximum Intensity, Second Maximum Intensity, and Second Maximum Mass.
+#'
+#' @param Recal data frame
+#' @return A modified data frame with added calculated summary columns.
+#'
+AddCalculatedSummary <- function(Recal) {
+  Recal <- dplyr::group_by(Recal, Index)
+  Recal <- dplyr::mutate(Recal,
+    Min = min(Exp_mass),
+    Max = max(Exp_mass),
+    MInt = mean(Abundance),
+    Maxmass = ifelse(Abundance == max(Abundance),
+      Exp_mass, NA
+    ),
+    Maxint = max(Abundance),
+    Secint = sort(Abundance, TRUE)[2],
+    Secmass = ifelse(Abundance == sort(Abundance, TRUE)[2], Exp_mass, NA)
+  )
+  return(Recal)
+}
+
+
+#' FilterAndMerge function
+#'
+#' This function takes a data frame 'Recal', a vector of column indices 'column_indices',
+#' and a column name 'column_name'. It performs the following steps:
+#' 1. Selects specified columns from 'Recal'.
+#' 2. Filters rows with complete cases for the specified column.
+#' 3. Merges the original 'Recal' data frame with the filtered columns.
+#'
+#' @param Recal The input data frame.
+#' @param column_indices A vector of column indices to be selected.
+#' @param column_name The name of the column used for filtering.
+#'
+#' @return  A modified data frame with selected columns and filtered rows.
+#'
+FilterAndMerge <- function(Recal, column_indices, column_name) {
+  selected_columns <- Recal[, c(1, column_indices)]
+  selected_columns <- selected_columns[complete.cases(selected_columns[, column_name]), ]
+  Recal <- merge(Recal, selected_columns, by.x = c("Series"), by.y = c("Series"))
+  return(Recal)
 }
