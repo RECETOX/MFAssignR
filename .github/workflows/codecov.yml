@@ -44,5 +44,4 @@ jobs:
       - name: Test coverage
         run: |
           conda activate mfassignr-dev
-          cd MFAssignR/
           Rscript -e "covr::codecov(quiet = FALSE)"
