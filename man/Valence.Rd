@@ -18,3 +18,9 @@ Returns the valence of the specified component; used by the
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
 environment.
 }
+\examples{
+Valence("C")
+
+Valence("C")
+
+}

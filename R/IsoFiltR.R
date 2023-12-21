@@ -153,8 +153,6 @@ combine_isotopes <- function(Isotopes) {
 #' @return list(Monolist, Isolist):
 #'   Monolist - monoistopic and non-matched masses,
 #'   Isolist - isotopic masses
-#' @examples
-#' IsoFiltR(peaks = df)
 #' @export
 IsoFiltR <- function(
     peaks,

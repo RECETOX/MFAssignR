@@ -45,7 +45,7 @@ plot_spectrum <- function(plotpeak, RecalPlot) {
 #' @examples
 #' data <- data.frame(Exp_mass = c(100, 150, 200))
 #' processed_data <- processMassList(data)
-#'
+#' @export
 processMassList <- function(data) {
   data$NM <- round(data$Exp_mass)
 

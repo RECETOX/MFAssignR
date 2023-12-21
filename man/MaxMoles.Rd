@@ -20,3 +20,9 @@ Returns the maximum limit of moles used by the
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
 environment.
 }
+\examples{
+MaxMoles("C")
+
+MaxMoles("C")
+
+}

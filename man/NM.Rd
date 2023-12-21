@@ -19,3 +19,9 @@ Returns the nominal masses of molecular components, using zero for charge
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
 environment.
 }
+\examples{
+EM("C")
+
+EM("C")
+
+}

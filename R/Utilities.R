@@ -540,11 +540,6 @@ Even <- function(x) {
 #'
 #' @return boolean
 #'
-#' @examples
-#' ValidFormula(moles)
-#'
-#' ValidFormula(c(2, 3, 1, 0, 0, 0, 0, 0, 1))
-#'
 #' @export
 #'
 ValidFormula <- function(moles) {

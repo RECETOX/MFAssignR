@@ -20,3 +20,9 @@ Returns the minimum limit of moles used by the
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
 environment.
 }
+\examples{
+LowMoles("C")
+
+LowMoles("C")
+
+}

@@ -290,8 +290,6 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000
 
             loop[CompFactorToInt("M")] <- 0 #LowMoles("M")
             repeat {
-
-
                               loop[CompFactorToInt("E")] <- 0 #LowMoles("E")
                               repeat {
 

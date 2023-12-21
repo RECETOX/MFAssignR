@@ -18,6 +18,9 @@ HighMoles(
   Cl37 = 0,
   N15 = 0,
   D = 0,
+  Br = 0,
+  Br81 = 0,
+  I = 0,
   M = 0,
   NH4 = 0,
   Z = 1
@@ -36,4 +39,10 @@ Returns the maximum limit of moles used by the
 \details{
 This is an internal fuction that will not work outside the \code{\link{MFAssign}} function
 environment.
+}
+\examples{
+HighMoles("C")
+
+HighMoles("C")
+
 }
