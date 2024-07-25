@@ -42,8 +42,8 @@ filter_and_arrange_data <- function(peaks, sn) {
 #' A list containing two elements: "Carblist" and "Sulflist," each representing a list of data chunks.
 #' @export
 create_data_chunks <- function(data1) {
-  sect <- ceiling(nrow(data1)) / 10
-  over <- round(sect) * 0.15
+  sect <- ceiling(ceiling(nrow(data1))/10)
+  over <- ceiling(round(sect) * 0.15)
 
   data_chunks <- list()
   for (i in 1:10) {

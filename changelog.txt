@@ -1,5 +1,12 @@
 Package Updates
 
+05/25/2023 (Version 1.0.2)
+- Fixed an issue with IsoFiltR that occasionally caused and error regarding the lack of precision when converting between integer and double. This was addressed by "wrapping" Sect and Over with ceiling() when those numbers are first defined.
+
+04/12/2023 (Version 1.0.2)
+- Fixed an issue that could generate warnings when running MFAssign, MFAssign_RMD, MFAssignCHO, and MFAssignCHO_RMD. It also had a reported impact on performance.
+Thank you to the users for bringing the issue to my attention.
+
 06/16/2022 (Version 1.0.2)
 - Fixed issues that caused MFAssign, MFAssign_RMD, MFAssignCHO, and MFAssignCHO_RMD to have errors in R version 4.2.0.
 - Fixed a minor issue that caused formula groups to be represented on the VK and MZGroups plots that were not present in the actual dataset. This addresses a purely visual issue and has no other impacts on the data output.
