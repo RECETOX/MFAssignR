@@ -1,8 +1,18 @@
+make_path <- function(mode, identifier) {
+  file.path("test-data", paste0(mode, "_cho_", identifier, ".rds"))
+}
+
 load_expected <- function(mode) {
-  unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
-  ambig <- readRDS(file.path("test-data", paste0(mode, "_cho_ambig.rds")))
-  none <- readRDS(file.path("test-data", paste0(mode, "_cho_none.rds")))
+  unambig <- readRDS(make_path(mode, "unambig"))
+  ambig <- readRDS(make_path(mode, "ambig"))
+  none <- readRDS(make_path(mode, "none"))
   return(list(Unambig = unambig, Ambig = ambig, None = none))
+}
+
+update_expected <- function(actual, mode) {
+  saveRDS(actual$Ambig, file = make_path(mode, "ambig"))
+  saveRDS(actual$Unambig, file = make_path(mode, "unambig"))
+  saveRDS(actual$None, file = make_path(mode, "none"))
 }
 
 patrick::with_parameters_test_that("MFAssignCHO works",
@@ -15,8 +25,6 @@ patrick::with_parameters_test_that("MFAssignCHO works",
     )
 
     expected <- load_expected(mode)
-    # keys <- c("Ambig", "Unambig", "None")
-    # expect_equal(actual[keys], expected)
 
     expect_equal(actual$Ambig, expected$Ambig)
     expect_equal(actual$Unambig, expected$Unambig)
