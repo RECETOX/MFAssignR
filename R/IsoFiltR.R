@@ -353,6 +353,11 @@ merge_and_filter_abundances <- function(final_pair2, end_data) {
   return(aligned_data)
 }
 
+#' Return TRUE if any of the elements in the list has a length of 0, otherwise FALSE
+filtered_data_is_empty<- function(filtered_data) {
+  return(any(lapply(filtered_data, length) == 0))
+}
+
 #' Process carbon isotoping data
 #'
 #' This function processes carbon isotoping data using specified parameters and filtering criteria.
@@ -393,6 +398,13 @@ process_carbon_isotoping <- function(raw_data, carb_error, carb_ratio, end_data)
     extracted_pair$mono_pair,
     extracted_pair$iso_pair
   )
+
+  if(filtered_data_is_empty(filtered_data)) {
+    return(list(
+      MonoC = raw_data, # treat all data as mono and return it.
+      IsoC1 = data.frame(Exp_mass = c(), Abundance = c(), RT = c()),
+      IsoC2 = data.frame(Exp_mass = c(), Abundance = c(), RT = c())))
+  }
 
   iso1 <- data.frame(Mono_mass = filtered_data$Iso_mass1, Tag = "Iso1")
   iso1 <- rbind(iso1, data.frame(Mono_mass = -42, Tag = "Iso1"))
