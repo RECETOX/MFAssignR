@@ -1,13 +1,12 @@
-# patrick::with_parameters_test_that("IsoFiltR works",
-#   {
-#     raw <- read.csv(file.path("test-data", paste0("QC1_1_", toupper(mode), "_500.csv")))
-#     actual <- IsoFiltR(raw)
-#     expected <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
-#     expect_equal(actual, expected)
-#   },
-#   mode = c("pos", "neg")
-# )
-
+patrick::with_parameters_test_that("IsoFiltR works",
+  {
+    raw <- read.csv(file.path("test-data", paste0("QC1_1_", toupper(mode), "_500.csv")))
+    actual <- IsoFiltR(raw)
+    expected <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
+    expect_equal(actual, expected)
+  },
+  mode = c("pos", "neg")
+)
 
 test_that("IsoFiltR works on recetox-aplcms output", {
   raw <- read.table(file.path("test-data", "21_qc_no_dil_milliq.txt"), header=TRUE, sep="\t")
