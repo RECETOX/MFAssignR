@@ -354,6 +354,9 @@ merge_and_filter_abundances <- function(final_pair2, end_data) {
 }
 
 #' Return TRUE if any of the elements in the list has a length of 0, otherwise FALSE
+#' @param filtered_data Filtered data with mono-iso links.
+#' @return TRUE if any of the links is 0, otherwise FALSE.
+#' @export
 filtered_data_is_empty<- function(filtered_data) {
   return(any(lapply(filtered_data, length) == 0))
 }
