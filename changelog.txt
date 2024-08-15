@@ -1,5 +1,24 @@
 Package Updates
 
+07/25/2024 (Version 1.0.3)
+- Initial refactoring and added tests by @hechth in #23
+- Rmd document describing the MFAssignR workflow added by @KristinaGomoryova in #20
+- Cleanup by @hechth in #26
+- Implement unit tests for the HistNoise module by @wverastegui in #25
+- Added Codecov CI by @zargham-ahmad in #28
+- Removed SNplot duplicate by @hechth in #27
+- Unexplained numbers turned into variables by @KristinaGomoryova in #29
+- Implement unit tests for the RecalFunctions module by @wverastegui in #30
+- test for the MfassignCHO function by @KristinaGomoryova in #31
+- Refactored IsoFiltR.R by @zargham-ahmad in #35
+- Removed Halogen specific files and combined functionality where possible by @hechth in #32
+- Refactored the RecalList function in the RecalFunctions module by @wverastegui in #33
+- Refactor the Recal function in the RecalFunctions module by @wverastegui in #36
+- Package reorganization by @KristinaGomoryova in #34
+- Pulling changes from uptsream by @hechth in #38
+- Failing tests corrected by @KristinaGomoryova in #42
+
+
 05/25/2023 (Version 1.0.2)
 - Fixed an issue with IsoFiltR that occasionally caused and error regarding the lack of precision when converting between integer and double. This was addressed by "wrapping" Sect and Over with ceiling() when those numbers are first defined.
 
