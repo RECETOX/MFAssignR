@@ -1,5 +1,10 @@
 Package Updates
 
+unreleased
+
+-  Fixed bug which caused isofiltr to fail is some subsection of input has no isotope pairs #43
+
+
 07/25/2024 (Version 1.0.3)
 - Initial refactoring and added tests by @hechth in #23
 - Rmd document describing the MFAssignR workflow added by @KristinaGomoryova in #20
