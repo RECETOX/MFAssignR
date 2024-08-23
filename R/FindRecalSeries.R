@@ -20,7 +20,7 @@
 #' @param df An output from RecalList, containing recalibrant CH2 series.
 #' @return A dataframe of 10 best-scoring series.
 
-findSeries <- function(df){
+findSeries <- function(df) {
 
 # Arrange the data
 df <- df %>%
@@ -35,8 +35,8 @@ df <- df %>%
 # We need to add some tolerance, because there is low chance full 100% would be covered
 
 tolerance <- 100
-global_min <- min(data.subset$Min.Mass.Range) + tolerance
-global_max <- max(data.subset$Max.Mass.Range) - tolerance
+global_min <- min(df$Min.Mass.Range) + tolerance
+global_max <- max(df$Max.Mass.Range) - tolerance
 
 # Create all combinations of ions
 iter <- combinations(nrow(df), 5, v = 1:nrow(df))
@@ -45,7 +45,7 @@ iter <- combinations(nrow(df), 5, v = 1:nrow(df))
 coversRange <- data.frame(iter, coversRange = 0)
 
 # Check if the combinations cover the whole data range
-for (i in 1:nrow(iter)){
+for (i in 1:nrow(iter)) {
   comb <- iter[i, ]
   subset <- df[comb, ]
   local_min <- min(subset$Min.Mass.Range)
@@ -85,7 +85,7 @@ scores <- list()
 # Iterate over combinations and score them
 for (i in 1:nrow(coversRangeTrue)) {
   comb <- iter[i, ]
-  subset <- data.subset[comb, ]
+  subset <- df[comb, ]
   comb_score <- score_combination(subset)
   scores <- append(scores, list(comb_score))
 }
