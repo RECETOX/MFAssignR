@@ -179,7 +179,7 @@ Recal <- function(df,
   names(df)[1:2] <- c("Abundance", "Exp_mass")
 
   if (cols == 2) {
-    isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, Tag = "X"), isopeaks) # Change 12/6/19
+    isopeaks <- if(isopeaks == "none"){data.frame(mass = 1, Abundance = 1, Tag = "X")}else{isopeaks}
     # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:3)]
@@ -246,7 +246,7 @@ Recal <- function(df,
   ######################################################
   # Version for LC-MS Data Lists
   if (cols == 3) {
-    isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, RT = 0, Tag = "X"), isopeaks) # Change 12/6/19
+    isopeaks <- if(isopeaks == "none"){data.frame(mass = 1, Abundance = 1, RT = 0, Tag = "X")}else{isopeaks}
 
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:4)]
