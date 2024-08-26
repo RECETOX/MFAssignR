@@ -77,11 +77,11 @@ processMassList <- function(data) {
 #' @param remove_indices Indices of rows to be removed from the result.
 #'
 #' @return A processed dataset with updated abundance and type columns.
-processKnown <- function(rest, known, kmd_col, z_col, num_col, type, step_limit, remove_indices) {
+processKnown <- function(rest, known, kmd_col, z_col, num_col, element_mass, type, step_limit, remove_indices) {
   names(known)[2] <- "base_mass"
 
   step_result <- merge(rest, known, by.x = c(kmd_col, z_col), by.y = c(kmd_col, z_col))
-  step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / step_limit)
+  step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / element_mass)
   step_result[[type]] <- step_result[[type]] + step_result[[num_col]]
   step_result$Type <- type
   step_result$form <- paste(step_result[c("C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE")], sep = "_")
@@ -217,10 +217,12 @@ Recal <- function(df,
     ############
     # Picking recalibrants with series
     # Process known_O
-    Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", "O", step_O, c(10, 31))
+    O_mass <- 15.9949146223
+    Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(10, 31))
 
     # Process known_H2
-    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", "H2", step_H2, c(10, 31))
+    H_mass <- 2.01565
+    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H_mass, "H2", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
