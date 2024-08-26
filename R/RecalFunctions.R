@@ -84,7 +84,7 @@ processKnown <- function(rest, known, kmd_col, z_col, num_col, element_mass, typ
   step_result[[num_col]] <- round((step_result$Exp_mass - step_result$base_mass) / element_mass)
   step_result[[type]] <- step_result[[type]] + step_result[[num_col]]
   step_result$Type <- type
-  step_result$form <- paste(step_result[c("C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE")], sep = "_")
+  step_result$form <- paste(step_result$C, step_result$H, step_result$O, step_result$N, step_result$S,  step_result$P, step_result$E, step_result$S34, step_result$N15, step_result$D, step_result$Cl, step_result$Fl, step_result$Cl37, step_result$M, step_result$NH4, step_result$POE, step_result$NOE, sep = "_")
   step_result <- step_result[abs(step_result[[num_col]]) <= step_limit, ]
   step_result <- step_result[-remove_indices]
   return(step_result)
