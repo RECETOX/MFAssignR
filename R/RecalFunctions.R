@@ -86,7 +86,7 @@ processKnown <- function(rest, known, kmd_col, z_col, num_col, element_mass, typ
   step_result$Type <- type
   step_result$form <- paste(step_result[c("C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE")], sep = "_")
   step_result <- step_result[abs(step_result[[num_col]]) <= step_limit, ]
-  step_result <- step_result[-remove_indices, ]
+  step_result <- step_result[-remove_indices]
   return(step_result)
 }
 
