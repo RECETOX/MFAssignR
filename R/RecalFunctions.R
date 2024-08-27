@@ -72,6 +72,7 @@ processMassList <- function(data) {
 #' @param kmd_col The column name for KMD in both datasets.
 #' @param z_col The column name for Z in both datasets.
 #' @param num_col The column name to store the calculated number of compounds.
+#' @param element_mass The mass of either O16 or H2.
 #' @param type The column name to store the type of compound.
 #' @param step_limit The limit for considering compounds.
 #' @param remove_indices Indices of rows to be removed from the result.
