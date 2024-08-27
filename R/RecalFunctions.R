@@ -179,6 +179,9 @@ Recal <- function(df,
   df$mode <- mode
   names(df)[1:2] <- c("Abundance", "Exp_mass")
 
+  O_mass <- 15.9949146223
+  H_mass <- 2.01565
+
   if (cols == 2) {
     isopeaks <- if(typeof(isopeaks) == "character"){data.frame(mass = 1, Abundance = 1, Tag = "X")}else{isopeaks}
     # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
@@ -218,11 +221,9 @@ Recal <- function(df,
     ############
     # Picking recalibrants with series
     # Process known_O
-    O_mass <- 15.9949146223
     Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(10, 31))
 
     # Process known_H2
-    H_mass <- 2.01565
     Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H_mass, "H2", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
@@ -289,34 +290,9 @@ Recal <- function(df,
 
     ############
     # Picking recalibrants with series
+    Step2 <- processKnown(Rest, RecalList[c(1:22, 25, 26)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(11, 13, 33))
 
-    knownO <- RecalList[c(1:22, 25, 26)]
-    names(knownO)[2] <- "base_mass"
-    Step2 <- merge(Rest, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-    Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
-    Step2$O <- Step2$O + Step2$O_num
-    Step2$Type <- "O"
-    Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
-      Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
-      Step2$POE, Step2$NOE,
-      sep = "_"
-    )
-    Step2 <- Step2[abs(Step2$O_num) <= step_O, ]
-    Step2 <- Step2[-c(11, 13, 33)] #
-
-    knownH2 <- RecalList[c(1:22, 28, 29)]
-    names(knownH2)[2] <- "base_mass"
-    Step3 <- merge(Rest, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-    Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
-    Step3$H <- Step3$H + 2 * Step3$H2_num
-    Step3$Type <- "H2"
-    Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
-      Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
-      Step3$POE, Step3$NOE,
-      sep = "_"
-    )
-    Step3 <- Step3[abs(Step3$H2_num) <= step_H2, ]
-    Step3 <- Step3[-c(11, 13, 33)]
+    Step3 <- processKnown(Rest, RecalList[c(1:22, 28, 29)], "KMD_H2", "z_H2", "H2_num", H_mass, "H", step_H2, c(11, 13, 33))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass, .keep_all = TRUE)
