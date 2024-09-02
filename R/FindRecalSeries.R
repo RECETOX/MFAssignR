@@ -7,6 +7,16 @@
 #' better. 
 #' @return A filtered dataframe.
 
+filter_input <- function(df, abundance_score_threshold, peak_distance_threshold) {
+  df <- df %>%
+    filter(Abundance.Score > abundance_score_threshold) %>%
+    filter(Peak.Distance < peak_distance_threshold) %>%
+    separate(col = Mass.Range, into = c('Min.Mass.Range', 'Max.Mass.Range'), sep = "-") %>%
+    mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), 
+         Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
+    mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
+}
+
 #' Attempts to find most suitable series for recalibration.
 #'
 #' This function takes on input the CH2 homologous recalibration series, which are provided by the RecalList function #' and tries to find the most suitable series combination for recalibration based on the following criteria:
@@ -29,15 +39,7 @@
 #' @param df An output from RecalList, containing recalibrant CH2 series.
 #' @return A dataframe of 10 best-scoring series.
 
-filter_input <- function(df, abundance_score_threshold, peak_distance_threshold) {
-  df <- df %>%
-    filter(Abundance.Score > abundance_score_threshold) %>%
-    filter(Peak.Distance < peak_distance_threshold) %>%
-    separate(col = Mass.Range, into = c('Min.Mass.Range', 'Max.Mass.Range'), sep = "-") %>%
-    mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), 
-         Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
-    mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
-}
+
 
 
 findSeries <- function(df) {
