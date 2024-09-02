@@ -1,3 +1,12 @@
+#' Filters the input dataframe
+#' This function filters the input dataframe based on abundance score threshold and peak distance threshold; and 
+#' computes the length of the series.
+#' @param df Input dataframe = an output from RecalList, containing recalibrant CH2 series.
+#' @param abundance_score_threshold A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
+#' @param peak_distance_threshold A threshold for the peak distance parameter. The closer this value is to 1, the
+#' better. 
+#' @return A filtered dataframe.
+
 #' Attempts to find most suitable series for recalibration.
 #'
 #' This function takes on input the CH2 homologous recalibration series, which are provided by the RecalList function #' and tries to find the most suitable series combination for recalibration based on the following criteria:
