@@ -7,7 +7,7 @@
 #' better. 
 #' @return A filtered dataframe.
 
-filter_input <- function(df, abundance_score_threshold, peak_distance_threshold) {
+filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
     filter(Abundance.Score > abundance_score_threshold) %>%
     filter(Peak.Distance < peak_distance_threshold) %>%
@@ -78,7 +78,7 @@ findSeries <- function(df,
                        peak_distance_threshold) {
 
   # Arrange the data
-  df <- filter_input(df, abundance_score_threshold, peak_distance_threshold)
+  df <- filter_recal_series(df, abundance_score_threshold, peak_distance_threshold)
 
   # Compute the global minimum and maximum (range of a dataset)
   # We need to add some tolerance, because there is low chance full 100% would be covered
