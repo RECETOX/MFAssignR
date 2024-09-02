@@ -58,16 +58,27 @@ compute_scores <- function(combination) {
 #' Warning: this step is in general computationally demanding, for ~30 series it took around 30 min. 
 #' 
 #' @param df An output from RecalList, containing recalibrant CH2 series.
-#' @param tolerance A tolerance value to compute the global minimum and maximum. We expect that there is a low probability that the true minimal/maximal m/z value of the dataset will be in a top-scoring series. Therefore we need to set a reasonable tolerance, which will allow us to cover the most of the m/z range. Global minimum is then computed as true minimum + tolerance ; global maximum as true maximum - tolerance. In case tolerance is set to 0, true minimum and maximum will be used. Default value is 100.
+#' @param abundance_score_threshold A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
+#' @param peak_distance_threshold A threshold for the peak distance parameter. The closer this value is to 1, the
+#' better.
+#' @param tolerance A tolerance value to compute the global minimum and maximum. We expect that there is a low
+#' probability that the true minimal/maximal m/z value of the dataset will be in a top-scoring series. Therefore we
+#' need to set a reasonable tolerance, which will allow us to cover the most of the m/z range. Global minimum is then
+#' computed as true minimum + tolerance ; global maximum as true maximum - tolerance. In case tolerance is set to 0,
+#' true minimum and maximum will be used. Default value is 100.
 #' @param combination_subset Combinations of how many series should be computed. Default is 5, Recal function can take
 #' up to 10 series, but the more combinations, the longer computing time is expected (growing exponentially)
 #' 
 #' @return A dataframe of 10 best-scoring series.
 
-findSeries <- function(df, tolerance, combination_subset) {
+findSeries <- function(df, 
+                       tolerance, 
+                       combination_subset,
+                       abundance_score_threshold,
+                       peak_distance_threshold) {
 
   # Arrange the data
-  df <- filter_input(df, 100, 2)
+  df <- filter_input(df, abundance_score_threshold, peak_distance_threshold)
 
   # Compute the global minimum and maximum (range of a dataset)
   # We need to add some tolerance, because there is low chance full 100% would be covered
