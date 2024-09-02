@@ -20,23 +20,28 @@
 #' @param df An output from RecalList, containing recalibrant CH2 series.
 #' @return A dataframe of 10 best-scoring series.
 
+filter_input <- function(df, abundance_score_threshold, peak_distance_threshold) {
+  df <- df %>%
+    filter(Abundance.Score > abundance_score_threshold) %>%
+    filter(Peak.Distance < peak_distance_threshold) %>%
+    separate(col = Mass.Range, into = c('Min.Mass.Range', 'Max.Mass.Range'), sep = "-") %>%
+    mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), 
+         Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
+    mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
+}
+
+
 findSeries <- function(df) {
 
-# Arrange the data
-df <- df %>%
-  separate(col = Mass.Range, into = c('Min.Mass.Range', 'Max.Mass.Range'), sep = "-") %>%
-  mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), 
-         Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
-  mutate(Series.Length = Max.Mass.Range - Min.Mass.Range) %>%
-  filter(Abundance.Score > 100) %>%
-  filter(Peak.Distance < 2) 
+  # Arrange the data
+  df <- filter_input(df, 100, 2)
 
-# Compute the global minimum and maximum (range of a dataset)
-# We need to add some tolerance, because there is low chance full 100% would be covered
+  # Compute the global minimum and maximum (range of a dataset)
+  # We need to add some tolerance, because there is low chance full 100% would be covered
 
-tolerance <- 100
-global_min <- min(df$Min.Mass.Range) + tolerance
-global_max <- max(df$Max.Mass.Range) - tolerance
+  tolerance <- 100
+  global_min <- min(df$Min.Mass.Range) + tolerance
+  global_max <- max(df$Max.Mass.Range) - tolerance
 
 # Create all combinations of ions
 iter <- combinations(nrow(df), 5, v = 1:nrow(df))
