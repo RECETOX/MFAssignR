@@ -17,6 +17,27 @@ filter_input <- function(df, abundance_score_threshold, peak_distance_threshold)
     mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
 }
 
+# Compute the scores
+compute_scores <- function(combination) {
+  series <- paste0(combination$Series)
+  total_abundance <- sum(combination$Abundance.Score)
+  total_series_length <- sum(combination$Series.Length)
+  peak_proximity <- sum(1/(combination$Peak.Score))  
+  peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))  
+  coverage <- sum(combination$Max.Mass.Range - pmax(combination$Min.Mass.Range, lag(combination$Max.Mass.Range, default = 0)))
+  coverage_percent <- coverage/((global_max+100) - (global_min-100))*100
+  
+  return(list(
+    total_abundance = total_abundance,
+    total_series_length = total_series_length,
+    peak_proximity = peak_proximity,
+    peak_distance_proximity = peak_distance_proximity,
+    series = series,
+    coverage = coverage,
+    coverage_percent = coverage_percent
+  ))
+}
+
 #' Attempts to find most suitable series for recalibration.
 #'
 #' This function takes on input the CH2 homologous recalibration series, which are provided by the RecalList function #' and tries to find the most suitable series combination for recalibration based on the following criteria:
@@ -38,9 +59,6 @@ filter_input <- function(df, abundance_score_threshold, peak_distance_threshold)
 #' 
 #' @param df An output from RecalList, containing recalibrant CH2 series.
 #' @return A dataframe of 10 best-scoring series.
-
-
-
 
 findSeries <- function(df) {
 
@@ -74,26 +92,7 @@ for (i in 1:nrow(iter)) {
 # Subset only those, which cover whole range
 coversRangeTrue <- coversRange[coversRange$coversRange == 1, ]
 
-# Compute the scores
-score_combination <- function(combination) {
-  series <- paste0(combination$Series)
-  total_abundance <- sum(combination$Abundance.Score)
-  total_series_length <- sum(combination$Series.Length)
-  peak_proximity <- sum(1/(combination$Peak.Score))  
-  peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))  
-  coverage <- sum(combination$Max.Mass.Range - pmax(combination$Min.Mass.Range, lag(combination$Max.Mass.Range, default = 0)))
-  coverage_percent <- coverage/((global_max+100) - (global_min-100))*100
-  
-  return(list(
-    total_abundance = total_abundance,
-    total_series_length = total_series_length,
-    peak_proximity = peak_proximity,
-    peak_distance_proximity = peak_distance_proximity,
-    series = series,
-    coverage = coverage,
-    coverage_percent = coverage_percent
-  ))
-}
+
 
 # Create empty list for scored combinations
 scores <- list()
@@ -102,7 +101,7 @@ scores <- list()
 for (i in 1:nrow(coversRangeTrue)) {
   comb <- iter[i, ]
   subset <- df[comb, ]
-  comb_score <- score_combination(subset)
+  comb_score <- compute_scores(subset)
   scores <- append(scores, list(comb_score))
 }
 
