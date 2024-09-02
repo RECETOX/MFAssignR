@@ -58,22 +58,24 @@ compute_scores <- function(combination) {
 #' Warning: this step is in general computationally demanding, for ~30 series it took around 30 min. 
 #' 
 #' @param df An output from RecalList, containing recalibrant CH2 series.
+#' @param tolerance A tolerance value to compute the global minimum and maximum. We expect that there is a low probability that the true minimal/maximal m/z value of the dataset will be in a top-scoring series. Therefore we need to set a reasonable tolerance, which will allow us to cover the most of the m/z range. Global minimum is then computed as true minimum + tolerance ; global maximum as true maximum - tolerance. In case tolerance is set to 0, true minimum and maximum will be used. Default value is 100.
+#' @param combination_subset Combinations of how many series should be computed. Default is 5, Recal function can take
+#' up to 10 series, but the more combinations, the longer computing time is expected (growing exponentially)
+#' 
 #' @return A dataframe of 10 best-scoring series.
 
-findSeries <- function(df) {
+findSeries <- function(df, tolerance, combination_subset) {
 
   # Arrange the data
   df <- filter_input(df, 100, 2)
 
   # Compute the global minimum and maximum (range of a dataset)
   # We need to add some tolerance, because there is low chance full 100% would be covered
-
-  tolerance <- 100
   global_min <- min(df$Min.Mass.Range) + tolerance
   global_max <- max(df$Max.Mass.Range) - tolerance
 
-# Create all combinations of ions
-iter <- combinations(nrow(df), 5, v = 1:nrow(df))
+  # Create all combinations of ions
+  iter <- combinations(nrow(df), combination_subset, v = 1:nrow(df))
 
 # Helper dataframe with information which combinations do cover range
 coversRange <- data.frame(iter, coversRange = 0)
