@@ -12,9 +12,27 @@ test_that("Compute combinations works", {
   expect_equal(actual, expected)
 })
 
-test_that("Compute subsets from combinations", {
+test_that("Compute subsets from combinations works", {
   df <- head(readRDS(file.path("test-data", "pos_recalSeries.rds")), 5)
   expected <- readRDS("test-data/combination_subsets.rds")
   actual <- compute_subsets(df, 3)
   expect_equal(actual, expected)
 })
+
+test_that("Filtering of the subsets work", {
+  df <- readRDS("test-data/combination_subsets.rds")
+  expected <- readRDS("test-data/filtered_subsets.rds")
+  actual <- filter_subsets_based_on_coverage(df, 80, 206, 117)
+  expect_equal(actual, expected)
+}
+)
+
+patrick::with_parameters_test_that("Selection of the final series works",
+  {
+    df <- readRDS("test-data/scores_df.rds")
+    expected <- readRDS(file.path("test-data", paste0("final_series", mode, ".rds")))
+    actual <- find_final_series(df, 3, mode)
+    expect_equal(actual, expected)
+  },
+  mode = c(TRUE, FALSE)
+)
