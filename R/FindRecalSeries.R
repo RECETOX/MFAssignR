@@ -25,18 +25,16 @@ compute_scores <- function(combination) {
   total_abundance <- sum(combination$Abundance.Score)
   total_series_length <- sum(combination$Series.Length)
   peak_score <- sum(1/(combination$Peak.Score))  
-  peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))  
-  coverage <- sum(combination$Max.Mass.Range - pmax(combination$Min.Mass.Range, lag(combination$Max.Mass.Range, default = 0)))
-  coverage_percent <- coverage/((global_max+100) - (global_min-100))*100
-  
+  peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))
+  series_id <- paste(combination$Series, collapse=" ")
+
   return(list(
+    series = series,
     total_abundance = total_abundance,
     total_series_length = total_series_length,
     peak_proximity = peak_score,
     peak_distance_proximity = peak_distance_proximity,
-    series = series,
-    coverage = coverage,
-    coverage_percent = coverage_percent
+    series_id = series_id
   ))
 }
 
@@ -67,25 +65,45 @@ compute_coverage <- function(subset, global_max, global_min) {
   return(coverage_percent)
 }
 
-covers_range <- function(subset, global_min, global_max, coverage_threshold) {
-  coverage <- sum(subset$Max.Mass.Range - pmax(subset$Min.Mass.Range, lag(subset$Max.Mass.Range, default = 0)))
-  coverage_percent <- coverage/((global_max-100) - (global_min+100))*100
-  return(coverage_percent >= coverage_threshold)
+
+compute_combinations <- function(df, n) {
+  combs <- gtools::combinations(nrow(df), n, v = 1:nrow(df))
+  return(combs)
 }
 
-find_series_combinations <- function(df, iter, global_min, global_max) {
-  # Create empty list for scored combinations
-  scores <- list()
-  
-  for (i in 1:nrow(iter)) {
-    comb <- iter[i, ]
-    subset <- df[comb, ]
-    if (covers_range(subset, global_min, global_max, coverage_threshold)) {
-        comb_score <- compute_scores(subset)
-        scores <- append(scores, list(comb_score))
-    }
-   
+compute_subsets <- function(df, n) {
+  subsets <- apply(compute_combinations(df, n), 1, function(x) { df[x, ] })
+  return(subsets)
 }
+
+filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global_max, global_min) {
+  filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
+  return(filtered_subsets)
+}
+
+compute_final_score <- function(scores_df) {
+  final_score <- scores_df %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
+    dplyr::arrange(desc(sum_score))
+  
+  return(final_score)
+}
+
+find_final_series <- function(scores_df, number_of_combinations, fill_series){
+  final_series <- compute_final_score(scores_df)
+  
+  if (fill_series == FALSE) {
+    final_series <- final_series %>%
+      head(number_of_combinations)
+  } else {
+    final_series <- final_series %>%
+     # dplyr::filter(!duplicated(series)) %>%
+    dplyr::distinct(series, .keep_all = TRUE) %>%
+    head(10)
+  }
+
+  return(final_series)
 }
 
 #' Attempts to find most suitable series for recalibration.
@@ -116,52 +134,49 @@ find_series_combinations <- function(df, iter, global_min, global_max) {
 #' need to set a reasonable tolerance, which will allow us to cover the most of the m/z range. Global minimum is then
 #' computed as true minimum + tolerance ; global maximum as true maximum - tolerance. In case tolerance is set to 0,
 #' true minimum and maximum will be used. Default value is 100.
-#' @param combination_subset Combinations of how many series should be computed. Default is 5, Recal function can take
+#' @param number_of_combinations Combinations of how many series should be computed. Default is 5, Recal function can take
 #' up to 10 series, but the more combinations, the longer computing time is expected (growing exponentially)
 #' @param coverage_threshold How many % of the m/z range should be covered. Default is 90 %.
+#' @param fill_series If TRUE, top 10 unique series will be returned, otherwise only the series from the best 
+#' combination will be returned
 #' 
 #' @return A dataframe of 10 best-scoring series.
 
-find_series <- function(df, 
-                       tolerance, 
-                       combination_subset,
-                       abundance_score_threshold,
-                       peak_distance_threshold,
-                       coverage_threshold) {
+find_series <- function(df,
+                        global_min,
+                        global_max,
+                        number_of_combinations,
+                        abundance_score_threshold,
+                        peak_distance_threshold,
+                        coverage_threshold,
+                        fill_series) {
 
   # Arrange the data
   df <- filter_recal_series(df, abundance_score_threshold, peak_distance_threshold)
 
-  # Compute the global minimum and maximum (range of a dataset)
-  # We need to add some tolerance, because there is low chance full 100% would be covered
-  global_min <- min(df$Min.Mass.Range) + tolerance
-  global_max <- max(df$Max.Mass.Range) - tolerance
-
   # Create all combinations of ions
-  iter <- combinations(nrow(df), combination_subset, v = 1:nrow(df))
+  subsets <- compute_subsets(df, number_of_combinations)
+  # combs <- lapply(combs, function(x) { list(subset = x)})
+  # combs_with_coverage <- lapply(
+  #   combs,
+  #   function(x){
+  #     x[["coverage"]] <- compute_coverage(x[["subset"]], global_max, global_min)
+  #     return(x)
+  #   }
+  # )
 
-  # Find the most appropriate combination of series
-  scores_df <- find_series_combinations(df, iter, global_min, global_max, coverage_threshold)
+  # Filter the subsets based on coverage threshold
+  subsets_filtered <- filter_subsets_based_on_coverage(subsets, coverage_threshold, global_max, global_min)
 
-# Iterate over combinations and score them
-for (i in 1:nrow(coversRangeTrue)) {
-  comb <- iter[i, ]
-  subset <- df[comb, ]
+  # Compute the scores
+  scores <- lapply(subsets_filtered, function(x) { compute_scores(x) })
 
-}
+  # Append all scored combinations into a dataframe
+  scores_df <- do.call(rbind, lapply(scores, as.data.frame))
 
-# Append all scored combinations into a dataframe
-scores_df <- do.call(rbind, lapply(scores, as.data.frame))
+  # Filter for final series
+  final_series <- find_final_series(scores_df, number_of_combinations, fill_series)
 
-# Filter for the 10 top scoring series
-finalSeries <- scores_df %>%
-  filter(coverage_percent > 90) %>%
-  rowwise() %>%
-  mutate(sum_score = sum(total_abundance, total_series_length, peak_score, peak_distance_proximity, coverage_percent)) %>%
-  arrange(desc(sum_score)) %>%
-  filter(!duplicated(series)) %>%
-  head(10)
-
-# Return the top scoring series
-return(finalSeries)
+  # Return the top scoring series
+  return(final_series)
 }
