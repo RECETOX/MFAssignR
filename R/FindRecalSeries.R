@@ -15,6 +15,8 @@ filter_recal_series <- function(df, abundance_score_threshold, peak_distance_thr
     mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), 
          Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
     mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
+
+  return(df)
 }
 
 # Compute the scores
@@ -22,7 +24,7 @@ compute_scores <- function(combination) {
   series <- paste0(combination$Series)
   total_abundance <- sum(combination$Abundance.Score)
   total_series_length <- sum(combination$Series.Length)
-  peak_proximity <- sum(1/(combination$Peak.Score))  
+  peak_score <- sum(1/(combination$Peak.Score))  
   peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))  
   coverage <- sum(combination$Max.Mass.Range - pmax(combination$Min.Mass.Range, lag(combination$Max.Mass.Range, default = 0)))
   coverage_percent <- coverage/((global_max+100) - (global_min-100))*100
@@ -30,12 +32,60 @@ compute_scores <- function(combination) {
   return(list(
     total_abundance = total_abundance,
     total_series_length = total_series_length,
-    peak_proximity = peak_proximity,
+    peak_proximity = peak_score,
     peak_distance_proximity = peak_distance_proximity,
     series = series,
     coverage = coverage,
     coverage_percent = coverage_percent
   ))
+}
+
+compute_coverage <- function(subset, global_max, global_min) {
+  subset <- subset[order(subset$Min.Mass.Range), ]
+
+  # Initialize the coverage and the end of the last segment
+  total_coverage <- 0
+  last_end <- -Inf
+
+  # Iterate through the intervals
+  for (i in 1:nrow(subset)) {
+    current_start <- subset$Min.Mass.Range[i]
+    current_end <- subset$Max.Mass.Range[i]
+  
+    if (current_start > last_end) {
+      # Non-overlapping segment, add the full length to coverage
+      total_coverage <- total_coverage + (current_end - current_start)
+    } else {
+      # Overlapping segment, add only the non-overlapping portion
+      total_coverage <- total_coverage + max(0, current_end - last_end)
+    }
+  
+    # Update the last_end to the current segment's end
+    last_end <- max(last_end, current_end)
+  }
+  coverage_percent <- total_coverage/(global_max - global_min)*100
+  return(coverage_percent)
+}
+
+covers_range <- function(subset, global_min, global_max, coverage_threshold) {
+  coverage <- sum(subset$Max.Mass.Range - pmax(subset$Min.Mass.Range, lag(subset$Max.Mass.Range, default = 0)))
+  coverage_percent <- coverage/((global_max-100) - (global_min+100))*100
+  return(coverage_percent >= coverage_threshold)
+}
+
+find_series_combinations <- function(df, iter, global_min, global_max) {
+  # Create empty list for scored combinations
+  scores <- list()
+  
+  for (i in 1:nrow(iter)) {
+    comb <- iter[i, ]
+    subset <- df[comb, ]
+    if (covers_range(subset, global_min, global_max, coverage_threshold)) {
+        comb_score <- compute_scores(subset)
+        scores <- append(scores, list(comb_score))
+    }
+   
+}
 }
 
 #' Attempts to find most suitable series for recalibration.
@@ -68,14 +118,16 @@ compute_scores <- function(combination) {
 #' true minimum and maximum will be used. Default value is 100.
 #' @param combination_subset Combinations of how many series should be computed. Default is 5, Recal function can take
 #' up to 10 series, but the more combinations, the longer computing time is expected (growing exponentially)
+#' @param coverage_threshold How many % of the m/z range should be covered. Default is 90 %.
 #' 
 #' @return A dataframe of 10 best-scoring series.
 
-findSeries <- function(df, 
+find_series <- function(df, 
                        tolerance, 
                        combination_subset,
                        abundance_score_threshold,
-                       peak_distance_threshold) {
+                       peak_distance_threshold,
+                       coverage_threshold) {
 
   # Arrange the data
   df <- filter_recal_series(df, abundance_score_threshold, peak_distance_threshold)
@@ -88,34 +140,14 @@ findSeries <- function(df,
   # Create all combinations of ions
   iter <- combinations(nrow(df), combination_subset, v = 1:nrow(df))
 
-# Helper dataframe with information which combinations do cover range
-coversRange <- data.frame(iter, coversRange = 0)
-
-# Check if the combinations cover the whole data range
-for (i in 1:nrow(iter)) {
-  comb <- iter[i, ]
-  subset <- df[comb, ]
-  local_min <- min(subset$Min.Mass.Range)
-  local_max <- max(subset$Max.Mass.Range)
-  if (local_min <= global_min & local_max >= global_max) {
-    coversRange$coversRange[i] <- 1
-  } 
-}
-
-# Subset only those, which cover whole range
-coversRangeTrue <- coversRange[coversRange$coversRange == 1, ]
-
-
-
-# Create empty list for scored combinations
-scores <- list()
+  # Find the most appropriate combination of series
+  scores_df <- find_series_combinations(df, iter, global_min, global_max, coverage_threshold)
 
 # Iterate over combinations and score them
 for (i in 1:nrow(coversRangeTrue)) {
   comb <- iter[i, ]
   subset <- df[comb, ]
-  comb_score <- compute_scores(subset)
-  scores <- append(scores, list(comb_score))
+
 }
 
 # Append all scored combinations into a dataframe
@@ -125,7 +157,7 @@ scores_df <- do.call(rbind, lapply(scores, as.data.frame))
 finalSeries <- scores_df %>%
   filter(coverage_percent > 90) %>%
   rowwise() %>%
-  mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity, coverage_percent)) %>%
+  mutate(sum_score = sum(total_abundance, total_series_length, peak_score, peak_distance_proximity, coverage_percent)) %>%
   arrange(desc(sum_score)) %>%
   filter(!duplicated(series)) %>%
   head(10)
