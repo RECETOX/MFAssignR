@@ -42,6 +42,13 @@ test_that("Computing final scores work", {
   expect_equal(actual, expected)
 })
 
+test_that("Computing scores works", {
+  df <- readRDS("test-data/filtered_subsets.rds")[[1]]
+  expected <- readRDS("test-data/computed_scores.rds")
+  actual <- compute_scores(df)
+  expect_equal(actual, expected)
+})
+
 patrick::with_parameters_test_that("Selection of the final series works",
   {
     df <- readRDS("test-data/scores_df.rds")
