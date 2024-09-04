@@ -1,5 +1,5 @@
 test_that("Filtering input dataframe works", {
-  pos_recalList <-head(readRDS(file.path("test-data", "pos_recallist.rds")), 10)
+  pos_recalList <- head(readRDS(file.path("test-data", "pos_recallist.rds")), 10)
   colnames(pos_recalList) <- gsub(" ", ".", colnames(pos_recalList))
   expected <- readRDS("test-data/filtered_recallist.rds")
   actual <- filter_recal_series(pos_recalList, abundance_score_threshold = 0, peak_distance_threshold = 2)
@@ -32,8 +32,7 @@ test_that("Filtering of the subsets based on coverage works", {
   expected <- readRDS("test-data/filtered_subsets.rds")
   actual <- filter_subsets_based_on_coverage(df, 80, 206, 117)
   expect_equal(actual, expected)
-}
-)
+})
 
 test_that("Computing final scores work", {
   df <- head(readRDS("test-data/scores_df.rds"), 6)
