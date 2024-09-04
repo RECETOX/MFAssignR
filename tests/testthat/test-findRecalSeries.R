@@ -1,3 +1,11 @@
+test_that("Filtering input dataframe works", {
+  pos_recalList <-head(readRDS(file.path("test-data", "pos_recallist.rds")), 10)
+  colnames(pos_recalList) <- gsub(" ", ".", colnames(pos_recalList))
+  expected <- readRDS("test-data/filtered_recallist.rds")
+  actual <- filter_recal_series(pos_recalList, abundance_score_threshold = 0, peak_distance_threshold = 2)
+  expect_equal(actual, expected)
+})
+
 test_that("Compute coverage works", {
   pos_recalList <- readRDS(file.path("test-data", "pos_recalSeries.rds"))
   actual <- compute_coverage(pos_recalList, 499.326, 111.044)
