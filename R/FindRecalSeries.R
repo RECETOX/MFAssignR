@@ -52,7 +52,10 @@ compute_subsets <- function(df, n) {
 #'
 #' @return Coverage (in %) of a particular subset.
 compute_coverage <- function(subset, global_max, global_min) {
-  subset <- subset[order(subset$Min.Mass.Range), ]
+  subset <- subset %>%
+    dplyr::arrange(Min.Mass.Range)
+  
+  #subset <- subset[order(subset$Min.Mass.Range), ]
 
   # Initialize the coverage and the end of the last segment
   total_coverage <- 0
@@ -124,7 +127,7 @@ compute_final_score <- function(scores_df) {
     dplyr::rowwise() %>%
     dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
     dplyr::arrange(desc(sum_score)) %>%
-    ungroup()
+    dplyr::ungroup()
 
   return(final_score)
 }
