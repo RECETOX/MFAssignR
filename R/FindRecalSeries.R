@@ -6,7 +6,6 @@
 #' @param peak_distance_threshold A threshold for the peak distance parameter. The closer this value is to 1, the
 #' better.
 #' @return A filtered dataframe.
-
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
     dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
@@ -27,7 +26,6 @@ filter_recal_series <- function(df, abundance_score_threshold, peak_distance_thr
 #' @param n Number of combinations to compute.
 #'
 #' @return A dataframe of row-index based combinations.
-
 compute_combinations <- function(df, n) {
   combs <- gtools::combinations(nrow(df), n, v = seq_len(nrow(df)))
   return(combs)
@@ -39,7 +37,6 @@ compute_combinations <- function(df, n) {
 #' @param n Number of combinations to compute.
 #'
 #' @return A list of subsets based on series combinations.
-
 compute_subsets <- function(df, n) {
   subsets <- apply(compute_combinations(df, n), 1, function(x) {
     df[x, ]
@@ -49,12 +46,11 @@ compute_subsets <- function(df, n) {
 
 #' Computes coverage of a subset.
 #' This function computes m/z range coverage of a particular subset. The higher coverage, the better.
-#' @param subset A subset of pre-filtered input data, has a size of combination number.
-#' @param global_min A lower bound of the instrument m/z range.
-#' @param global_max A higher bound of the instrument m/z range.
+#' @param subset DataFrame A subset of pre-filtered input data, has a size of combination number.
+#' @param global_min numeric A lower bound of the instrument m/z range.
+#' @param global_max numeric A higher bound of the instrument m/z range.
 #'
 #' @return Coverage (in %) of a particular subset.
-
 compute_coverage <- function(subset, global_max, global_min) {
   subset <- subset[order(subset$Min.Mass.Range), ]
 
@@ -90,7 +86,6 @@ compute_coverage <- function(subset, global_max, global_min) {
 #' @param global_max A higher bound of the instrument m/z range.
 #'
 #' @return A list of subsets which pass the coverage threshold (their coverage is higher than the threshold)
-
 filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global_max, global_min) {
   filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
   return(filtered_subsets)
@@ -101,7 +96,6 @@ filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global
 #' @param combination A subset of pre-filtered input data, has a size of combination number.
 #'
 #' @return List of scores for individual parameters.
-
 compute_scores <- function(combination) {
   series <- paste0(combination$Series)
   total_abundance <- sum(combination$Abundance.Score)
@@ -125,7 +119,6 @@ compute_scores <- function(combination) {
 #' @param scores_df A dataframe of scores.
 #'
 #' @return A sorted dataframe containing the final score.
-
 compute_final_score <- function(scores_df) {
   final_score <- scores_df %>%
     dplyr::rowwise() %>%
@@ -144,17 +137,16 @@ compute_final_score <- function(scores_df) {
 #' combination will be returned.
 #'
 #' @return A dataframe of best-scoring series.
-
 find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   final_series <- compute_final_score(scores_df)
 
   if (fill_series == FALSE) {
     final_series <- final_series %>%
-      head(number_of_combinations)
+      dplyr::slice_head(n = number_of_combinations)
   } else {
     final_series <- final_series %>%
       dplyr::distinct(series, .keep_all = TRUE) %>%
-      head(10)
+      dplyr::slice_head(n = 10)
   }
 
   return(final_series)
@@ -192,7 +184,6 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
 #' combination will be returned.
 #'
 #' @return A dataframe of n-10 best-scoring series.
-
 find_series <- function(df,
                         global_min,
                         global_max,
