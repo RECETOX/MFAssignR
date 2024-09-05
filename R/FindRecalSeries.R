@@ -1,11 +1,11 @@
 #' Filters the input dataframe
 #' This function filters the input dataframe based on abundance score threshold and peak distance threshold; and
 #' computes the length of the series.
-#' @param df Input dataframe = an output from RecalList, containing recalibrant CH2 series.
-#' @param abundance_score_threshold A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
-#' @param peak_distance_threshold A threshold for the peak distance parameter. The closer this value is to 1, the
+#' @param df DataFrame An output from RecalList, containing recalibrant CH2 series.
+#' @param abundance_score_threshold Float A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
+#' @param peak_distance_threshold Float A threshold for the peak distance parameter. The closer this value is to 1, the
 #' better.
-#' @return A filtered dataframe.
+#' @return DataFrame A filtered dataframe.
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
     dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
@@ -22,10 +22,10 @@ filter_recal_series <- function(df, abundance_score_threshold, peak_distance_thr
 
 #' Computes all possible combinations of series
 #' This function computes all possible combinations of series. The number of combinations is specified by user.
-#' @param df A pre-filtered dataframe containing series.
-#' @param n Number of combinations to compute.
+#' @param df DataFrame A pre-filtered dataframe containing series.
+#' @param n Integer Number of combinations to compute.
 #'
-#' @return A dataframe of row-index based combinations.
+#' @return DataFrame A dataframe of row-index based combinations.
 compute_combinations <- function(df, n) {
   combs <- gtools::combinations(nrow(df), n, v = seq_len(nrow(df)))
   return(combs)
@@ -33,8 +33,8 @@ compute_combinations <- function(df, n) {
 
 #' Computes subsets based on combinations.
 #' This function selects subsets of the input data based on the combinations of series.
-#' @param df A pre-filtered dataframe containing series.
-#' @param n Number of combinations to compute.
+#' @param df DataFrame A pre-filtered dataframe containing series.
+#' @param n Integer Number of combinations to compute.
 #'
 #' @return A list of subsets based on series combinations.
 compute_subsets <- function(df, n) {
@@ -47,8 +47,8 @@ compute_subsets <- function(df, n) {
 #' Computes coverage of a subset.
 #' This function computes m/z range coverage of a particular subset. The higher coverage, the better.
 #' @param subset DataFrame A subset of pre-filtered input data, has a size of combination number.
-#' @param global_min numeric A lower bound of the instrument m/z range.
-#' @param global_max numeric A higher bound of the instrument m/z range.
+#' @param global_min Float A lower bound of the instrument m/z range.
+#' @param global_max Float A higher bound of the instrument m/z range.
 #'
 #' @return Coverage (in %) of a particular subset.
 compute_coverage <- function(subset, global_max, global_min) {
@@ -80,12 +80,12 @@ compute_coverage <- function(subset, global_max, global_min) {
 
 #' Filters subsets based on the coverage.
 #' This function filters the subsets based on the coverage threshold.
-#' @param subsets A subset of pre-filtered input data, has a size of combination number.
-#' @param coverage_threshold How many % of the m/z range should be covered. Default is 90 %.
-#' @param global_min A lower bound of the instrument m/z range.
-#' @param global_max A higher bound of the instrument m/z range.
+#' @param subsets DataFrame A subset of pre-filtered input data, has a size of combination number.
+#' @param coverage_threshold Integer How many % of the m/z range should be covered. Default is 90 %.
+#' @param global_min Float A lower bound of the instrument m/z range.
+#' @param global_max Float A higher bound of the instrument m/z range.
 #'
-#' @return A list of subsets which pass the coverage threshold (their coverage is higher than the threshold)
+#' @return List A list of subsets which pass the coverage threshold (their coverage is higher than the threshold)
 filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global_max, global_min) {
   filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
   return(filtered_subsets)
@@ -93,9 +93,9 @@ filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global
 
 #' Computes the scores for individual subsets.
 #' This function computes individual scores for the particular combination of series.
-#' @param combination A subset of pre-filtered input data, has a size of combination number.
+#' @param combination DataFrame A subset of pre-filtered input data, has a size of combination number.
 #'
-#' @return List of scores for individual parameters.
+#' @return List List of scores for individual parameters.
 compute_scores <- function(combination) {
   series <- paste0(combination$Series)
   total_abundance <- sum(combination$Abundance.Score)
@@ -116,14 +116,15 @@ compute_scores <- function(combination) {
 
 #' Compute a sum score for the whole combination.
 #' This function computes a score summing all parameter scores and arranges them in descending manner.
-#' @param scores_df A dataframe of scores.
+#' @param scores_df DataFrame A dataframe of scores.
 #'
-#' @return A sorted dataframe containing the final score.
+#' @return DataFrame A sorted dataframe containing the final score.
 compute_final_score <- function(scores_df) {
   final_score <- scores_df %>%
     dplyr::rowwise() %>%
     dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
-    dplyr::arrange(desc(sum_score))
+    dplyr::arrange(desc(sum_score)) %>%
+    ungroup()
 
   return(final_score)
 }
@@ -131,12 +132,12 @@ compute_final_score <- function(scores_df) {
 #' Selects final series.
 #' This function selects final best-scoring series. An user can choose, whether only a number of series corresponding
 #' to the size of the combination will be returned, or 10 best-scoring 10 series will be returned.
-#' @param scores_df A dataframe of scores.
-#' @param number_of_combinations Number of combinations to compute.
-#' @param fill_series If TRUE, top 10 unique series will be returned, otherwise only the series from the best
+#' @param scores_df DataFrame A dataframe of scores.
+#' @param number_of_combinations Integer Number of combinations to compute.
+#' @param fill_series Boolean If TRUE, top 10 unique series will be returned, otherwise only the series from the best
 #' combination will be returned.
 #'
-#' @return A dataframe of best-scoring series.
+#' @return DataFrame A dataframe of best-scoring series.
 find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   final_series <- compute_final_score(scores_df)
 
@@ -171,16 +172,16 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
 #'
 #' Warning: this step is in general computationally demanding, for ~30 series it took around 30 min.
 #'
-#' @param df An output from RecalList, containing recalibrant CH2 series.
-#' @param global_min A lower bound of the instrument m/z range.
-#' @param global_max A higher bound of the instrument m/z range.
-#' @param number_of_combinations Combinations of how many series should be computed. Default is 5, Recal function can
+#' @param df DataFrame An output from RecalList, containing recalibrant CH2 series.
+#' @param global_min Float A lower bound of the instrument m/z range.
+#' @param global_max Float A higher bound of the instrument m/z range.
+#' @param number_of_combinations Integer Combinations of how many series should be computed. Default is 5, Recal function can
 #' take up to 10 series, but the more combinations, the longer computing time is expected (growing exponentially)
-#' @param abundance_score_threshold A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
-#' @param peak_distance_threshold A threshold for the peak distance parameter. The closer this value is to 1, the
+#' @param abundance_score_threshold Float A threshold for filtering abundance score parameter. The series with higher values #' are better. Default value is 100.
+#' @param peak_distance_threshold Float A threshold for the peak distance parameter. The closer this value is to 1, the
 #' better.
-#' @param coverage_threshold How many % of the m/z range should be covered. Default is 90 %.
-#' @param fill_series If TRUE, top 10 unique series will be returned, otherwise only the series from the best
+#' @param coverage_threshold Integer How many % of the m/z range should be covered. Default is 90 %.
+#' @param fill_series Boolean If TRUE, top 10 unique series will be returned, otherwise only the series from the best
 #' combination will be returned.
 #'
 #' @return A dataframe of n-10 best-scoring series.
