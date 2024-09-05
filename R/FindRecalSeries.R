@@ -127,7 +127,7 @@ compute_final_score <- function(scores_df) {
     dplyr::rowwise() %>%
     dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
     dplyr::arrange(desc(sum_score)) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() 
 
   return(final_score)
 }
@@ -147,10 +147,12 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   if (fill_series == FALSE) {
     final_series <- final_series %>%
       dplyr::slice_head(n = number_of_combinations)
+    saveRDS(final_series, "test-data/final_seriesFALSE.rds")
   } else {
     final_series <- final_series %>%
       dplyr::distinct(series, .keep_all = TRUE) %>%
       dplyr::slice_head(n = 10)
+    saveRDS(final_series, "test-data/final_seriesTRUE.rds")
   }
 
   return(final_series)
