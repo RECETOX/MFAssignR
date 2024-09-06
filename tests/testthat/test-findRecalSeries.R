@@ -48,28 +48,18 @@ test_that("Computing scores works", {
   expect_equal(actual, expected)
 })
 
-test_that("Positive final series work", {
+patrick::with_parameters_test_that("Selection of the final series works", {
   df <- readRDS("test-data/scores_df_full.rds")
-  expected <- readRDS("test-data/final_seriesTRUE.rds")
-  actual <- find_final_series(df, 3, TRUE)
+  expected <- readRDS(file.path("test-data", paste0("final_series", mode, ".rds")))
+  n <- 3
+
+  actual <- find_final_series(df, n, mode)
+  if (mode == TRUE) {
+    expect_equal(nrow(actual), 10)
+  } else {
+    expect_equal(nrow(actual), n)  
+  }
   expect_equal(actual, expected)
-})
-
-#patrick::with_parameters_test_that("Selection of the final series works",
-#  {
-#    df <- readRDS("test-data/scores_df_full.rds")
-#    expected <- readRDS(file.path("test-data", paste0("final_series", mode, ".rds")))
-#    n <- 3
-
-#    actual <- find_final_series(df, n, mode)
-  #  if (mode == TRUE) {
-  #    expect_equal(nrow(actual), 10)
-  # } else {
-  #    expect_true(nrow(actual), n)
-  #
-  #  }
-  #  expect_equal(actual, expected)
-#  expect_equal(actual,expected)
-#  },
-#  mode = c(TRUE, FALSE)
-#)
+},
+  mode = c(TRUE, FALSE)
+)
