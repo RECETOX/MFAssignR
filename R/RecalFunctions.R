@@ -180,7 +180,7 @@ Recal <- function(df,
   names(df)[1:2] <- c("Abundance", "Exp_mass")
 
   O_mass <- 15.9949146223
-  H_mass <- 2.01565
+  H2_mass <- 2.01565
 
   if (cols == 2) {
     isopeaks <- if(typeof(isopeaks) == "character"){data.frame(mass = 1, Abundance = 1, Tag = "X")}else{isopeaks}
@@ -224,7 +224,7 @@ Recal <- function(df,
     Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(10, 31))
 
     # Process known_H2
-    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H_mass, "H2", step_H2, c(10, 31))
+    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H2_mass, "H2", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
@@ -292,7 +292,7 @@ Recal <- function(df,
     # Picking recalibrants with series
     Step2 <- processKnown(Rest, RecalList[c(1:22, 25, 26)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(11, 13, 33))
 
-    Step3 <- processKnown(Rest, RecalList[c(1:22, 28, 29)], "KMD_H2", "z_H2", "H2_num", H_mass, "H", step_H2, c(11, 13, 33))
+    Step3 <- processKnown(Rest, RecalList[c(1:22, 28, 29)], "KMD_H2", "z_H2", "H2_num", H2_mass, "H", step_H2, c(11, 13, 33))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass, .keep_all = TRUE)
