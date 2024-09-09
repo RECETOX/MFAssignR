@@ -8,6 +8,7 @@
 #' @return DataFrame A filtered dataframe.
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
+    dplyr::rename_with(~ gsub(" ", ".", .x, fixed = TRUE)) %>%
     dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
     dplyr::filter(Peak.Distance < peak_distance_threshold) %>%
     tidyr::separate(col = Mass.Range, into = c("Min.Mass.Range", "Max.Mass.Range"), sep = "-") %>%
