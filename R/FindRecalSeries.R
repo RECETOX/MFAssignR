@@ -199,7 +199,7 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
 #'
 #' @return A dataframe of n-10 best-scoring series.
 #' @export
-find_series <- function(df,
+FindRecalSeries <- function(df,
                         global_min,
                         global_max,
                         number_of_combinations,
