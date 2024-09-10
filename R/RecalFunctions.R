@@ -224,7 +224,7 @@ Recal <- function(df,
     Step2 <- processKnown(Rest, RecalList[c(1:21, 24, 25)], "KMD_O", "z_O", "O_num", O_mass, "O", step_O, c(10, 31))
 
     # Process known_H2
-    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H2_mass, "H2", step_H2, c(10, 31))
+    Step3 <- processKnown(Rest, RecalList[c(1:21, 27, 28)], "KMD_H2", "z_H2", "H2_num", H2_mass, "H", step_H2, c(10, 31))
 
     Out <- rbind(Step2, Step3)
     Out2 <- dplyr::distinct(Out, Exp_mass)
