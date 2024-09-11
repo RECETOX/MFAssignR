@@ -46,9 +46,10 @@ patrick::with_parameters_test_that("RecalList works",
     expected <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds")))
 
     actual <- MFAssignR::RecalList(unambig)
+    saveRDS(actual, "test-data/actual_recallist_check.rds")
 
-    actual <- actual %>% dplyr::select(-"Series Index")
-    expected <- expected %>% dplyr::select(-"Series Index")
+    actual <- actual %>% dplyr::select(-"Series.Index")
+    expected <- expected %>% dplyr::select(-"Series.Index")
     actual_sorted <- dplyr::arrange_at(actual, "Series")
     expected_sorted <- dplyr::arrange_at(expected, "Series")
     
