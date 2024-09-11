@@ -685,7 +685,7 @@ RecalList <- function(df) {
   Recal <- Recal[, -columns_to_drop]
 
   columns_to_rename <- c(2, 3, 4, 5, 6, 7, 8, 9)
-  new_column_names <- c("Number Observed", "Series Index", "Mass Range", "Tall Peak", "Abundance Score", "Peak Score", "Peak Distance", "Series Score")
+  new_column_names <- c("Number.Observed", "Series.Index", "Mass.Range", "Tall.Peak", "Abundance.Score", "Peak.Score", "Peak.Distance", "Series.Score")
   names(Recal)[columns_to_rename] <- new_column_names
   Recal <- Recal[!duplicated(Recal), ]
 }

@@ -15,7 +15,7 @@ patrick::with_parameters_test_that("Recal works",
   {
     peaks <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
     unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
-    recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series Score")
+    recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series.Score")
 
     actual <- MFAssignR::Recal(
       unambig,
@@ -42,13 +42,14 @@ patrick::with_parameters_test_that("Recal works",
 
 patrick::with_parameters_test_that("RecalList works",
   {
+    expected_path <- file.path("test-data", paste0(mode, "_recallist.rds"))
     unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
-    expected <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds")))
 
     actual <- MFAssignR::RecalList(unambig)
+    expected <- readRDS(expected_path)
 
-    actual <- actual %>% dplyr::select(-"Series Index")
-    expected <- expected %>% dplyr::select(-"Series Index")
+    actual <- actual %>% dplyr::select(-"Series.Index")
+    expected <- expected %>% dplyr::select(-"Series.Index")
     actual_sorted <- dplyr::arrange_at(actual, "Series")
     expected_sorted <- dplyr::arrange_at(expected, "Series")
     
@@ -87,7 +88,7 @@ patrick::with_parameters_test_that("Replicate Recal isopeaks error", {
   mode <- "neg"
   peaks <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
   unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
-  recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series Score")
+  recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series.Score")
 
   actual <- MFAssignR::Recal(
       df = unambig,
@@ -109,3 +110,13 @@ iso = c(NA,
         data.frame(exp_mass = NA, abundance = NA, tag = NA), 
         data.frame(exp_mass = c(NA, NA), abundance = c(NA, NA), tag = c(NA, NA)))
 )
+
+test_that("Column names in the Recal function", {
+    mode = "pos"
+    unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))   
+    expected <- c("Series", "Number.Observed", "Series.Index", "Mass.Range", "Tall.Peak", "Abundance.Score", "Peak.Score", "Peak.Distance", "Series.Score")
+
+    actual <- colnames(MFAssignR::RecalList(unambig))
+
+    expect_equal(expected, actual)
+})
