@@ -6,6 +6,7 @@
 #' @param peak_distance_threshold Float A threshold for the peak distance parameter. The closer this value is to 1, the
 #' better.
 #' @return DataFrame A filtered dataframe.
+#' @export
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
     dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
@@ -26,6 +27,7 @@ filter_recal_series <- function(df, abundance_score_threshold, peak_distance_thr
 #' @param n Integer Number of combinations to compute.
 #'
 #' @return DataFrame A dataframe of row-index based combinations.
+#' @export
 compute_combinations <- function(df, n) {
   combs <- gtools::combinations(nrow(df), n, v = seq_len(nrow(df)))
   return(combs)
@@ -37,6 +39,7 @@ compute_combinations <- function(df, n) {
 #' @param n Integer Number of combinations to compute.
 #'
 #' @return A list of subsets based on series combinations.
+#' @export
 compute_subsets <- function(df, n) {
   subsets <- apply(compute_combinations(df, n), 1, function(x) {
     df[x, ]
@@ -51,6 +54,7 @@ compute_subsets <- function(df, n) {
 #' @param global_max Float A higher bound of the instrument m/z range.
 #'
 #' @return Coverage (in %) of a particular subset.
+#' @export
 compute_coverage <- function(subset, global_max, global_min) {
   subset <- subset %>%
     dplyr::arrange(Min.Mass.Range)
@@ -89,6 +93,7 @@ compute_coverage <- function(subset, global_max, global_min) {
 #' @param global_max Float A higher bound of the instrument m/z range.
 #'
 #' @return List A list of subsets which pass the coverage threshold (their coverage is higher than the threshold)
+#' @export
 filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global_max, global_min) {
   filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
   return(filtered_subsets)
@@ -99,6 +104,7 @@ filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global
 #' @param combination DataFrame A subset of pre-filtered input data, has a size of combination number.
 #'
 #' @return List List of scores for individual parameters.
+#' @export
 compute_scores <- function(combination) {
   series <- paste0(combination$Series)
   total_abundance <- sum(combination$Abundance.Score)
@@ -122,6 +128,7 @@ compute_scores <- function(combination) {
 #' @param scores_df DataFrame A dataframe of scores.
 #'
 #' @return DataFrame A sorted dataframe containing the final score.
+#' @export
 compute_final_score <- function(scores_df) {
   final_score <- scores_df %>%
     dplyr::rowwise() %>%
@@ -141,6 +148,7 @@ compute_final_score <- function(scores_df) {
 #' combination will be returned.
 #'
 #' @return DataFrame A dataframe of best-scoring series.
+#' @export
 find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   final_series <- compute_final_score(scores_df)
 
@@ -190,7 +198,8 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
 #' combination will be returned.
 #'
 #' @return A dataframe of n-10 best-scoring series.
-find_series <- function(df,
+#' @export
+FindRecalSeries <- function(df,
                         global_min,
                         global_max,
                         number_of_combinations,
