@@ -56,3 +56,29 @@ patrick::with_parameters_test_that("RecalList works",
   },
   mode = c("neg", "pos"),
 )
+
+test_that("Replicate the Recal bug", {
+  unambig <- read.delim("test-data/bug_unambig.tabular")
+  mono <- read.delim("test-data/bug_mono.tabular")
+  iso <- read.delim("test-data/bug_iso.tabular")
+  recallist <- read.delim("test-data/bug_recalseries.tabular")
+
+  actual <- MFAssignR::Recal(
+      df = unambig,
+      peaks = mono,
+      isopeaks = iso,
+      mode = "neg",
+      SN = 6*346.0706,
+      series1 = recallist$Series[1],
+      series2 = recallist$Series[2],
+      series3 = recallist$Series[3],
+      series4 = recallist$Series[4],
+      series5 = recallist$Series[5],
+      step_O = 3,
+      step_H2 = 5,
+      mzRange = 50,
+      CalPeak = 150
+    )
+    expected <- readRDS("test-data/bug_recal_expected.rds")
+    expect_equal(actual, expected)
+})
