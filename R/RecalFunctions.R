@@ -154,7 +154,7 @@ processKnown <- function(rest, known, kmd_col, z_col, num_col, type_col, type, m
 #' @export
 Recal <- function(df,
                   peaks,
-                  isopeaks = "none",
+                  isopeaks = NA,
                   mode,
                   SN = 0,
                   mzRange = 30,
@@ -188,8 +188,7 @@ Recal <- function(df,
   names(df)[1:2] <- c("Abundance", "Exp_mass")
 
   if (cols == 2) {
-    isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, Tag = "X"), isopeaks) # Change 12/6/19
-    # isopeaks <- if(isopeaks == "none") data.frame(mass = 1, Abundance = 1, Tag = "X") else isopeaks
+    isopeaks <- if(any(is.na(isopeaks))) {data.frame(mass = 1, Abundance = 1, Tag = "X")} else {isopeaks}
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:3)]
     isopeaks <- setNames(isopeaks, c("mass", "Abundance", "Tag"))
@@ -199,8 +198,7 @@ Recal <- function(df,
     peaks$Tag <- "X"
     peaks$Tag2 <- "Mono"
 
-    # peaks <- if(isopeaks != "none") rbind(peaks, isopeaks) else peaks
-    peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
+    peaks <- na.omit(rbind(peaks, isopeaks)) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:4)]
     peaks <- setNames(peaks[c(2, 1, 3, 4)], c("Abundance", "mass", "Tag", "Tag2"))
@@ -255,8 +253,7 @@ Recal <- function(df,
   ######################################################
   # Version for LC-MS Data Lists
   if (cols == 3) {
-    isopeaks <- ifelse(isopeaks == "none", data.frame(mass = 1, Abundance = 1, RT = 0, Tag = "X"), isopeaks) # Change 12/6/19
-
+    isopeaks <- if(any(is.na(isopeaks))) {data.frame(mass = 1, Abundance = 1, RT = 0, Tag = "X")} else {isopeaks}
     isopeaks <- data.frame(isopeaks)
     isopeaks <- isopeaks[, c(1:4)]
     isopeaks <- setNames(isopeaks, c("mass", "Abundance", "RT", "Tag"))
@@ -267,7 +264,7 @@ Recal <- function(df,
     peaks$Tag2 <- "Mono"
 
 
-    peaks <- ifelse(isopeaks != "none", rbind(peaks, isopeaks), peaks) # Change 12/6/19
+    peaks <- rbind(peaks, isopeaks) # Change 12/6/19
     peaks <- data.frame(peaks)
     peaks <- peaks[, c(1:5)]
     peaks <- setNames(peaks, c("mass", "Abundance", "RT", "Tag", "Tag2"))
