@@ -1,8 +1,9 @@
 Package Updates
 
-unreleased
-
--  Fixed bug which caused isofiltr to fail is some subsection of input has no isotope pairs #43
+09/11/2024 (Version 1.0.4)
+- fixed bug which caused isofiltr to fail is some subsection of input has no isotope pairs #43
+- added functions to automatically find the best set of calibrants [#44](https://github.com/RECETOX/MFAssignR/pull/44)
+- fixed bugs in the recal function [#56](https://github.com/RECETOX/MFAssignR/pull/56)[#57](https://github.com/RECETOX/MFAssignR/pull/57)
 
 
 07/25/2024 (Version 1.0.3)
