@@ -83,12 +83,11 @@ test_that("Replicate the Recal bug", {
     expect_equal(actual, expected)
 })
 
-test_that("Replicate Recal isopeaks error", {
+patrick::with_parameters_test_that("Replicate Recal isopeaks error", {
   mode <- "neg"
   peaks <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
   unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
   recallist <- readRDS(file.path("test-data", paste0(mode, "_recallist.rds"))) |> dplyr::arrange_at("Series Score")
-  iso <- data.frame(exp_mass = NA, abundance = NA, tag = NA)
 
   actual <- MFAssignR::Recal(
       df = unambig,
@@ -105,4 +104,8 @@ test_that("Replicate Recal isopeaks error", {
     expected <- readRDS("test-data/recal_isopeaks.rds")
 
     expect_equal(actual, expected)
-})
+},
+iso = c(NA, 
+        data.frame(exp_mass = NA, abundance = NA, tag = NA), 
+        data.frame(exp_mass = c(NA, NA), abundance = c(NA, NA), tag = c(NA, NA)))
+)
