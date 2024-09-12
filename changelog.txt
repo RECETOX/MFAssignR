@@ -1,5 +1,8 @@
 Package Updates
 
+09/12/2024 Version 1.1.1
+ - quick fix of hardcoded paths and imports [#59](https://github.com/RECETOX/MFAssignR/pull/59)
+
 09/11/2024 (Version 1.0.4 + Version 1.1.0)
 - fixed bug which caused isofiltr to fail is some subsection of input has no isotope pairs #43
 - added functions to automatically find the best set of calibrants [#44](https://github.com/RECETOX/MFAssignR/pull/44)
