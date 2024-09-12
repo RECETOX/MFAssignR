@@ -6,6 +6,7 @@
 #' @param peak_distance_threshold Float A threshold for the peak distance parameter. The closer this value is to 1, the
 #' better.
 #' @return DataFrame A filtered dataframe.
+#' @importFrom dplyr %>%
 #' @export
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
   df <- df %>%
@@ -54,6 +55,7 @@ compute_subsets <- function(df, n) {
 #' @param global_max Float A higher bound of the instrument m/z range.
 #'
 #' @return Coverage (in %) of a particular subset.
+#' @importFrom dplyr %>%
 #' @export
 compute_coverage <- function(subset, global_max, global_min) {
   subset <- subset %>%
@@ -128,6 +130,7 @@ compute_scores <- function(combination) {
 #' @param scores_df DataFrame A dataframe of scores.
 #'
 #' @return DataFrame A sorted dataframe containing the final score.
+#' @importFrom dplyr %>%
 #' @export
 compute_final_score <- function(scores_df) {
   final_score <- scores_df %>%
@@ -148,6 +151,7 @@ compute_final_score <- function(scores_df) {
 #' combination will be returned.
 #'
 #' @return DataFrame A dataframe of best-scoring series.
+#' @importFrom dplyr %>%
 #' @export
 find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   final_series <- compute_final_score(scores_df)
@@ -155,12 +159,10 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
   if (fill_series == FALSE) {
     final_series <- final_series %>%
       dplyr::slice_head(n = number_of_combinations)
-    saveRDS(final_series, "test-data/final_seriesFALSE.rds")
   } else {
     final_series <- final_series %>%
       dplyr::distinct(series, .keep_all = TRUE) %>%
       dplyr::slice_head(n = 10)
-    saveRDS(final_series, "test-data/final_seriesTRUE.rds")
   }
 
   return(final_series)
