@@ -155,6 +155,114 @@ calculate_neutral_mass <- function(records1, ionMode) {
   return(result)
 }
 
+prepare_unambiguous_assignments <- function(Unambig, col_select, min_def, max_def) {
+  Unambig <- Unambig[col_select]
+  ####
+  Unambig$NM <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$NM <- floor(Unambig$Exp_mass), Unambig$NM <- round(Unambig$Exp_mass)
+  ) # New 1/6/20
+  ####
+
+  Unambig$NM <- floor(Unambig$Exp_mass)
+
+  Unambig$KM_CH2 <- Unambig$Exp_mass * (14 / ch2_mass)
+  Unambig$KMD_CH2 <- round(Unambig$NM - Unambig$KM_CH2, 3)
+  ###
+  Unambig$z_CH2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$z_CH2 <- floor(Unambig$Exp_mass) %% 14 - 14, Unambig$z_CH2 <- round(Unambig$Exp_mass) %% 14 - 14
+  ) # New 1/6/20
+  ###
+  Unambig$KM_O <- Unambig$Exp_mass * (16 / o16_mass)
+  Unambig$KMD_O <- round(Unambig$NM - Unambig$KM_O, 3)
+  ###
+  Unambig$z_O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$z_O <- floor(Unambig$Exp_mass) %% 16 - 16, Unambig$z_O <- round(Unambig$Exp_mass) %% 16 - 16
+  ) # New 1/6/20
+  ###
+
+  Unambig$KM_H2 <- Unambig$Exp_mass * (2 / h2_mass)
+  Unambig$KMD_H2 <- round(Unambig$NM - Unambig$KM_H2, 3)
+  ###
+  Unambig$z_H2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$z_H2 <- floor(Unambig$Exp_mass) %% 2 - 2, Unambig$z_H2 <- round(Unambig$Exp_mass) %% 2 - 2
+  ) # New 1/6/20
+  ###
+
+  Unambig$KM_H2O <- Unambig$Exp_mass * (18 / h2o_mass)
+  Unambig$KMD_H2O <- round(Unambig$NM - Unambig$KM_H2O, 3)
+  ###
+  Unambig$z_H2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$z_H2O <- floor(Unambig$Exp_mass) %% 18 - 18, Unambig$z_H2O <- round(Unambig$Exp_mass) %% 18 - 18
+  ) # New 1/6/20
+  ###
+
+  Unambig$KM_CH2O <- Unambig$Exp_mass * (30 / ch2o_mass)
+  Unambig$KMD_CH2O <- round(Unambig$NM - Unambig$KM_CH2O, 3)
+  ###
+  Unambig$z_CH2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
+    Unambig$z_CH2O <- floor(Unambig$Exp_mass) %% 30 - 30, Unambig$z_CH2O <- round(Unambig$Exp_mass) %% 30 - 30
+  ) # New 1/6/20
+  ###
+  return(Unambig)
+}
+
+generate_formulas <- function(df) {
+  df <- dplyr::mutate(df,
+    Cform = ifelse(C == 0, "",
+      ifelse(C == 1, "C", paste("C", C, sep = ""))
+    ),
+    Hform = ifelse(H == 0, "",
+      ifelse(H == 1, "H", paste("H", H, sep = ""))
+    ),
+    Nform = ifelse(NTest == 0, "",
+      ifelse(NTest == 1, "N", paste("N", NTest, sep = ""))
+    ),
+    Oform = ifelse(O == 0, "",
+      ifelse(O == 1, "O", paste("O", O, sep = ""))
+    ),
+    Sform = ifelse(STest == 0, "",
+      ifelse(STest == 1, "S", paste("S", STest, sep = ""))
+    ),
+    Pform = ifelse(P == 0, "",
+      ifelse(P == 1, "P", paste("P", P, sep = ""))
+    ),
+    Clform = ifelse(ClTest == 0, "",
+      ifelse(ClTest == 1, "Cl", paste("Cl", ClTest, sep = ""))
+    ),
+    Flform = ifelse(Fl == 0, "",
+      ifelse(Fl == 1, "F", paste("F", Fl, sep = ""))
+    )
+  )
+  return(df)
+}
+
+generate_formulas_advanced <- function(df) {
+  df <- generate_formulas(df)
+  df <- dplyr::mutate(df,
+    Brform = ifelse(BrTest == 0, "",
+      ifelse(BrTest == 1, "Br", paste("Br", BrTest, sep = ""))
+    ),
+    Iform = ifelse(I == 0, "",
+      ifelse(I == 1, "I", paste("I", I, sep = ""))
+    )
+  )
+  return(df)
+}
+
+specialized_qa_steps <- function(df, HetCut) {
+  df <- as.data.frame(df)
+  df <- dplyr::group_by(df, Exp_mass, RA) # LCMS
+  
+  if (HetCut == "on") {
+    df <- dplyr::filter(df, HA == min(HA))
+  }
+  
+  df <- dplyr::group_by(df, Exp_mass, RA) # LCMS
+  df <- dplyr::distinct(df, formula, .keep_all = TRUE)
+  df <- dplyr::ungroup(df)
+  df <- df[!names(df) %in% c("HA")]
+  return(df)
+}
 #' Assigns all possible CHO molecular formulae to each row of input data frame
 #'
 #' MFAssignCHO() assigns all possible molecular formulae to each
@@ -634,63 +742,17 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
   Ambig <- Ambig[-c(3)]
   # Good to this point
   ## Unambiguous formulas prep
-
-  Unambig <- Unambig[c(
+  col_select <- c(
     "RA", "Exp_mass", "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D",
     "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-  )]
-  ####
-  Unambig$NM <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$NM <- floor(Unambig$Exp_mass), Unambig$NM <- round(Unambig$Exp_mass)
-  ) # New 1/6/20
-  ####
+  )
+
+  Unambig <- prepare_unambiguous_assignments(Unambig, col_select, min_def, max_def)
+  # Good to this point
 
   peaks$zstar <- ifelse(abs(floor(peaks$mass) - peaks$mass) >= min_def & abs(floor(peaks$mass) - peaks$mass) <= max_def,
     peaks$zstar <- floor(peaks$mass) %% 14 - 14, peaks$zstar <- round(peaks$mass) %% 14 - 14
   ) # New 1/6/20
-
-
-  Unambig$NM <- floor(Unambig$Exp_mass)
-
-  Unambig$KM_CH2 <- Unambig$Exp_mass * (14 / 14.01565)
-  Unambig$KMD_CH2 <- round(Unambig$NM - Unambig$KM_CH2, 3)
-  ###
-  Unambig$z_CH2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_CH2 <- floor(Unambig$Exp_mass) %% 14 - 14, Unambig$z_CH2 <- round(Unambig$Exp_mass) %% 14 - 14
-  ) # New 1/6/20
-  ###
-  Unambig$KM_O <- Unambig$Exp_mass * (16 / 15.9949146223)
-  Unambig$KMD_O <- round(Unambig$NM - Unambig$KM_O, 3)
-  ###
-  Unambig$z_O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_O <- floor(Unambig$Exp_mass) %% 16 - 16, Unambig$z_O <- round(Unambig$Exp_mass) %% 16 - 16
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_H2 <- Unambig$Exp_mass * (2 / 2.01565)
-  Unambig$KMD_H2 <- round(Unambig$NM - Unambig$KM_H2, 3)
-  ###
-  Unambig$z_H2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_H2 <- floor(Unambig$Exp_mass) %% 2 - 2, Unambig$z_H2 <- round(Unambig$Exp_mass) %% 2 - 2
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_H2O <- Unambig$Exp_mass * (18 / 18.01056468)
-  Unambig$KMD_H2O <- round(Unambig$NM - Unambig$KM_H2O, 3)
-  ###
-  Unambig$z_H2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_H2O <- floor(Unambig$Exp_mass) %% 18 - 18, Unambig$z_H2O <- round(Unambig$Exp_mass) %% 18 - 18
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_CH2O <- Unambig$Exp_mass * (30 / 30.01056468)
-  Unambig$KMD_CH2O <- round(Unambig$NM - Unambig$KM_CH2O, 3)
-  ###
-  Unambig$z_CH2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_CH2O <- floor(Unambig$Exp_mass) %% 30 - 30, Unambig$z_CH2O <- round(Unambig$Exp_mass) %% 30 - 30
-  ) # New 1/6/20
-  ###
-  # Good to this point
 
   ## Ambiguous
   Ambig <- Ambig[c(1, 2)]
@@ -856,15 +918,10 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
     DBE = C - 0.5 * (H + Cl + Cl37 + Fl) + 0.5 * (N + N15 + P) + 1,
     err_ppm = ((Neutral_mass - theor_mass) / Neutral_mass * 10^6),
     AE_ppm = round(abs((Neutral_mass - theor_mass) / Neutral_mass * 10^6), 2),
-
-    # NM = floor(Exp_mass),
-
     KM = Exp_mass * (14 / 14.01565), # KMD = NM - KM,
-
     max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + O + E + S34 + P + Cl + Cl37 + N15),
     rule_13 = round(actual_LA / max_LA, 1),
     Senior1 = H, #+ P + N + Cl + Cl37 + N15  ,
-
     DBEO = DBE - O,
     max_H = C * 2 + 2, H_test = round(H / max_H, 1),
     Senior2 = H * Valence("H") + O * Valence("O") + C * Valence("C"),
@@ -954,18 +1011,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
   ### Supplemental Specialized QA Steps
   records1 <- dplyr::mutate(records1, HA = E)
-
-  records1 <- dplyr::group_by(records1, Exp_mass, RA) # LCMS
-
-  ifelse(HetCut == "on", records1 <- dplyr::filter(records1, HA == (min(HA))), records1 <- records1)
-
-  records1 <- dplyr::group_by(records1, Exp_mass, RA) # LCMS
-
-  records1 <- dplyr::distinct(records1, formula, .keep_all = TRUE)
-
-  records1 <- dplyr::ungroup(records1)
-
-  records1 <- records1[!names(records1) %in% c("HA")]
+  records1 <- specialized_qa_steps(records1, HetCut)
 
 
 
@@ -1375,33 +1421,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
   records1X <- records1X[!names(records1X) %in% c("Senior1", "Senior2", "Senior3Val", "Senior3Atom")]
 
   ### Formula generation
-  records1X <-
-    dplyr::mutate(records1X,
-      Cform = ifelse(C == 0, "",
-        ifelse(C == 1, "C", paste("C", C, sep = ""))
-      ),
-      Hform = ifelse(H == 0, "",
-        ifelse(H == 1, "H", paste("H", H, sep = ""))
-      ),
-      Nform = ifelse(NTest == 0, "",
-        ifelse(NTest == 1, "N", paste("N", NTest, sep = ""))
-      ),
-      Oform = ifelse(O == 0, "",
-        ifelse(O == 1, "O", paste("O", O, sep = ""))
-      ),
-      Sform = ifelse(STest == 0, "",
-        ifelse(STest == 1, "S", paste("S", STest, sep = ""))
-      ),
-      Pform = ifelse(P == 0, "",
-        ifelse(P == 1, "P", paste("P", P, sep = ""))
-      ),
-      Clform = ifelse(ClTest == 0, "",
-        ifelse(ClTest == 1, "Cl", paste("Cl", ClTest, sep = ""))
-      ),
-      Flform = ifelse(Fl == 0, "",
-        ifelse(Fl == 1, "F", paste("F", Fl, sep = ""))
-      )
-    )
+  records1X <- generate_formulas(records1X)
 
   records1X <- tidyr::unite(records1X, class, Nform, Oform, Sform, Pform, Clform, Flform,
     sep = "", remove = FALSE
@@ -1431,18 +1451,10 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
   ### Supplemental Specialized QA Steps
   records1X <- dplyr::mutate(records1X, HA = NTest + STest + P + ClTest + E + Fl)
-
-  records1X <- dplyr::group_by(records1X, Exp_mass, RA) # LCMS
-
-  ifelse(HetCut == "on", records1X <- dplyr::filter(records1X, HA == (min(HA))), records1X <- records1X)
-
-  records1X <- dplyr::group_by(records1X, Exp_mass, RA) # LCMS
-
-  records1X <- dplyr::distinct(records1X, formula, RA, .keep_all = TRUE)
-
-  records1X <- dplyr::ungroup(records1X)
-
-  records1X <- records1X[!names(records1X) %in% c("HA")]
+  records1X <- specialized_qa_steps(
+    records1X,
+    HetCut
+  )
 
 
 
@@ -2346,16 +2358,11 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
       Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
       D * EM2("D") + Br * EM2("Br79") +
       Br81 * EM2("Br81m") + I * EM2("I127"), #
-
     C = C + E,
     DBE = C - 0.5 * (H + Cl + Cl37 + Fl + Br + Br81 + I) + 0.5 * (N + N15 + P) + 1,
     err_ppm = ((Neutral_mass - theor_mass) / Neutral_mass * 10^6),
     AE_ppm = round(abs((Neutral_mass - theor_mass) / Neutral_mass * 10^6), 2),
-
-    # NM = floor(Exp_mass),
-
     KM = Exp_mass * (14 / ch2_mass), # KMD = NM - KM,
-
     max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + O + E + S34 + P + Cl + Fl + Cl37 + N15
       + Br + Br81 + I),
     rule_13 = round(actual_LA / max_LA, 1),
@@ -2389,9 +2396,7 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
   records1 <- unique(records1)
   # check <- records1 %>% filter(AE_ppm <= 3 & S34 == 1)
   records1 <- dplyr::filter(records1, O_C < O_Cmax & H_C <= H_Cmax & H_C > H_Cmin & O_C >= O_Cmin &
-
     DBEO >= DBEOmin & DBEO <= DBEOmax &
-
     # !((ClTest) > HighMoles("Cl",Cl=Clx)|(ClTest) > HighMoles("Cl37",Cl37=Cl37x)) &
     # !((STest) > HighMoles("S",S=Sx)|(STest) > HighMoles("S34",S34=S34x)) &
     # !((NTest) > HighMoles("N",N=Nx)|(NTest) > HighMoles("N15",N15=N15x)) &
@@ -2399,21 +2404,13 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
     (ClTest <= Clx + Cl37x) &
     (NTest <= Nx + N15x) &
     (BrTest <= Brx + Br81x) &
-
     H_test <= 1 & rule_13 <= 1 &
-
     AE_ppm <= ppm_err &
-
     Even(Senior1) == TRUE & DBE >= 0 & DBE <= round(0.9 * (C + N)) &
-
     O <= 2 * C + 3 * (N + N15) + 4 * P + 4 * (S + S34) &
-
     O >= Omin &
-
     # RA >= 0 &
-
     Senior2 >= 2 * Valence("C") &
-
     Senior3Val >= (2 * Senior3Atom - 1))
 
   # check <- records1 %>% distinct(Exp_mass, .keep_all = TRUE)
@@ -2497,63 +2494,18 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
   Ambig <- Ambig[-c(3)]
   Ambig <- unique(Ambig)
   ## Unambiguous formulas prep
-
-  Unambig <- Unambig[c(
+  col_select <- c(
     "RA", "Exp_mass", "C", "H", "O", "N", "S", "P", "E", "S34", "N15", "D",
     "Cl", "Fl", "Cl37", "Br", "Br81", "I", "M", "NH4", "POE", "NOE", "Z"
-  )]
-  ####
-  Unambig$NM <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$NM <- floor(Unambig$Exp_mass), Unambig$NM <- round(Unambig$Exp_mass)
-  ) # New 1/6/20
-  ####
+  )
+
+  Unambig <- prepare_unambiguous_assignments(Unambig, col_select, min_def, max_def)
+  # Good to this point
 
   peaks$zstar <- ifelse(abs(floor(peaks$mass) - peaks$mass) >= min_def & abs(floor(peaks$mass) - peaks$mass) <= max_def,
     peaks$zstar <- floor(peaks$mass) %% 14 - 14, peaks$zstar <- round(peaks$mass) %% 14 - 14
   ) # New 1/6/20
 
-
-  Unambig$NM <- floor(Unambig$Exp_mass)
-
-  Unambig$KM_CH2 <- Unambig$Exp_mass * (14 / ch2_mass)
-  Unambig$KMD_CH2 <- round(Unambig$NM - Unambig$KM_CH2, 3)
-  ###
-  Unambig$z_CH2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_CH2 <- floor(Unambig$Exp_mass) %% 14 - 14, Unambig$z_CH2 <- round(Unambig$Exp_mass) %% 14 - 14
-  ) # New 1/6/20
-  ###
-  Unambig$KM_O <- Unambig$Exp_mass * (16 / o16_mass)
-  Unambig$KMD_O <- round(Unambig$NM - Unambig$KM_O, 3)
-  ###
-  Unambig$z_O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_O <- floor(Unambig$Exp_mass) %% 16 - 16, Unambig$z_O <- round(Unambig$Exp_mass) %% 16 - 16
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_H2 <- Unambig$Exp_mass * (2 / h2_mass)
-  Unambig$KMD_H2 <- round(Unambig$NM - Unambig$KM_H2, 3)
-  ###
-  Unambig$z_H2 <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_H2 <- floor(Unambig$Exp_mass) %% 2 - 2, Unambig$z_H2 <- round(Unambig$Exp_mass) %% 2 - 2
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_H2O <- Unambig$Exp_mass * (18 / h2o_mass)
-  Unambig$KMD_H2O <- round(Unambig$NM - Unambig$KM_H2O, 3)
-  ###
-  Unambig$z_H2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_H2O <- floor(Unambig$Exp_mass) %% 18 - 18, Unambig$z_H2O <- round(Unambig$Exp_mass) %% 18 - 18
-  ) # New 1/6/20
-  ###
-
-  Unambig$KM_CH2O <- Unambig$Exp_mass * (30 / ch2o_mass)
-  Unambig$KMD_CH2O <- round(Unambig$NM - Unambig$KM_CH2O, 3)
-  ###
-  Unambig$z_CH2O <- ifelse(abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) >= min_def & abs(floor(Unambig$Exp_mass) - Unambig$Exp_mass) <= max_def,
-    Unambig$z_CH2O <- floor(Unambig$Exp_mass) %% 30 - 30, Unambig$z_CH2O <- round(Unambig$Exp_mass) %% 30 - 30
-  ) # New 1/6/20
-  ###
-  # Good to this point
 
   ## Ambiguous
   Ambig <- Ambig[c(1, 2)]
@@ -3002,18 +2954,10 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
 
   ### Supplemental Specialized QA Steps
   records1 <- dplyr::mutate(records1, HA = NTest + STest + P + ClTest + E + Fl + I + BrTest)
-
-  records1 <- dplyr::group_by(records1, Exp_mass, RA) # LCMS
-
-  ifelse(HetCut == "on", records1 <- dplyr::filter(records1, HA == (min(HA))), records1 <- records1)
-
-  records1 <- dplyr::group_by(records1, Exp_mass, RA) # LCMS
-
-  records1 <- dplyr::distinct(records1, formula, RA, .keep_all = TRUE) ### Change Here 05/14/19
-
-  records1 <- dplyr::ungroup(records1)
-
-  records1 <- records1[!names(records1) %in% c("HA")]
+  records1 <- specialized_qa_steps(
+    records1,
+    HetCut
+  )
 
 
 
@@ -3734,40 +3678,7 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
   # check <- record1sX %>% distinct(Exp_mass, .keep_all = TRUE)
 
   ### Formula generation
-  records1X <-
-    dplyr::mutate(records1X,
-      Cform = ifelse(C == 0, "",
-        ifelse(C == 1, "C", paste("C", C, sep = ""))
-      ),
-      Hform = ifelse(H == 0, "",
-        ifelse(H == 1, "H", paste("H", H, sep = ""))
-      ),
-      Nform = ifelse(NTest == 0, "",
-        ifelse(NTest == 1, "N", paste("N", NTest, sep = ""))
-      ),
-      Oform = ifelse(O == 0, "",
-        ifelse(O == 1, "O", paste("O", O, sep = ""))
-      ),
-      Sform = ifelse(STest == 0, "",
-        ifelse(STest == 1, "S", paste("S", STest, sep = ""))
-      ),
-      Pform = ifelse(P == 0, "",
-        ifelse(P == 1, "P", paste("P", P, sep = ""))
-      ),
-      Clform = ifelse(ClTest == 0, "",
-        ifelse(ClTest == 1, "Cl", paste("Cl", ClTest, sep = ""))
-      ),
-      Flform = ifelse(Fl == 0, "",
-        ifelse(Fl == 1, "F", paste("F", Fl, sep = ""))
-      ),
-      Brform = ifelse(BrTest == 0, "",
-        ifelse(BrTest == 1, "Br", paste("Br", BrTest, sep = ""))
-      ),
-      Iform = ifelse(I == 0, "",
-        ifelse(I == 1, "I", paste("I", I, sep = ""))
-      )
-    )
-
+  records1X <- generate_formulas_advanced(records1X)
   records1X <- tidyr::unite(records1X, class, Nform, Oform, Sform, Pform, Clform, Flform, Brform, Iform,
     sep = "", remove = FALSE
   )
@@ -3798,18 +3709,10 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
 
   ### Supplemental Specialized QA Steps
   records1X <- dplyr::mutate(records1X, HA = NTest + STest + P + ClTest + E + Fl + BrTest + I)
-
-  records1X <- dplyr::group_by(records1X, Exp_mass, RA) # LCMS
-
-  ifelse(HetCut == "on", records1X <- dplyr::filter(records1X, HA == (min(HA))), records1X <- records1X)
-
-  records1X <- dplyr::group_by(records1X, Exp_mass, RA) # LCMS
-
-  records1X <- dplyr::distinct(records1X, formula, RA, .keep_all = TRUE) # Fix on 05/14/19
-
-  records1X <- dplyr::ungroup(records1X)
-
-  records1X <- records1X[!names(records1X) %in% c("HA")]
+  records1X <- specialized_qa_steps(
+    records1X,
+    HetCut
+  )
 
 
 
