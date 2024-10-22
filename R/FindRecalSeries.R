@@ -9,17 +9,14 @@
 #' @importFrom dplyr %>%
 #' @export
 filter_recal_series <- function(df, abundance_score_threshold, peak_distance_threshold) {
-  df <- df %>%
-    dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
-    dplyr::filter(Peak.Distance < peak_distance_threshold) %>%
-    tidyr::separate(col = Mass.Range, into = c("Min.Mass.Range", "Max.Mass.Range"), sep = "-") %>%
-    dplyr::mutate(
-      Min.Mass.Range = as.numeric(Min.Mass.Range),
-      Max.Mass.Range = as.numeric(Max.Mass.Range)
-    ) %>%
-    dplyr::mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
+    df <- df %>%
+        dplyr::filter(Abundance.Score > abundance_score_threshold) %>%
+        dplyr::filter(Peak.Distance < peak_distance_threshold) %>%
+        tidyr::separate(col = Mass.Range, into = c("Min.Mass.Range", "Max.Mass.Range"), sep = "-") %>%
+        dplyr::mutate(Min.Mass.Range = as.numeric(Min.Mass.Range), Max.Mass.Range = as.numeric(Max.Mass.Range)) %>%
+        dplyr::mutate(Series.Length = Max.Mass.Range - Min.Mass.Range)
 
-  return(df)
+    return(df)
 }
 
 #' Computes all possible combinations of series
@@ -30,8 +27,8 @@ filter_recal_series <- function(df, abundance_score_threshold, peak_distance_thr
 #' @return DataFrame A dataframe of row-index based combinations.
 #' @export
 compute_combinations <- function(df, n) {
-  combs <- gtools::combinations(nrow(df), n, v = seq_len(nrow(df)))
-  return(combs)
+    combs <- gtools::combinations(nrow(df), n, v = seq_len(nrow(df)))
+    return(combs)
 }
 
 #' Computes subsets based on combinations.
@@ -42,10 +39,10 @@ compute_combinations <- function(df, n) {
 #' @return A list of subsets based on series combinations.
 #' @export
 compute_subsets <- function(df, n) {
-  subsets <- apply(compute_combinations(df, n), 1, function(x) {
-    df[x, ]
-  })
-  return(subsets)
+    subsets <- apply(compute_combinations(df, n), 1, function(x) {
+        df[x, ]
+    })
+    return(subsets)
 }
 
 #' Computes coverage of a subset.
@@ -58,33 +55,33 @@ compute_subsets <- function(df, n) {
 #' @importFrom dplyr %>%
 #' @export
 compute_coverage <- function(subset, global_max, global_min) {
-  subset <- subset %>%
-    dplyr::arrange(Min.Mass.Range)
-  
-  #subset <- subset[order(subset$Min.Mass.Range), ]
+    subset <- subset %>%
+        dplyr::arrange(Min.Mass.Range)
 
-  # Initialize the coverage and the end of the last segment
-  total_coverage <- 0
-  last_end <- -Inf
+    # subset <- subset[order(subset$Min.Mass.Range), ]
 
-  # Iterate through the intervals
-  for (i in seq_len(nrow(subset))) {
-    current_start <- subset$Min.Mass.Range[i]
-    current_end <- subset$Max.Mass.Range[i]
+    # Initialize the coverage and the end of the last segment
+    total_coverage <- 0
+    last_end <- -Inf
 
-    if (current_start > last_end) {
-      # Non-overlapping segment, add the full length to coverage
-      total_coverage <- total_coverage + (current_end - current_start)
-    } else {
-      # Overlapping segment, add only the non-overlapping portion
-      total_coverage <- total_coverage + max(0, current_end - last_end)
+    # Iterate through the intervals
+    for (i in seq_len(nrow(subset))) {
+        current_start <- subset$Min.Mass.Range[i]
+        current_end <- subset$Max.Mass.Range[i]
+
+        if (current_start > last_end) {
+            # Non-overlapping segment, add the full length to coverage
+            total_coverage <- total_coverage + (current_end - current_start)
+        } else {
+            # Overlapping segment, add only the non-overlapping portion
+            total_coverage <- total_coverage + max(0, current_end - last_end)
+        }
+
+        # Update the last_end to the current segment's end
+        last_end <- max(last_end, current_end)
     }
-
-    # Update the last_end to the current segment's end
-    last_end <- max(last_end, current_end)
-  }
-  coverage_percent <- total_coverage / (global_max - global_min) * 100
-  return(coverage_percent)
+    coverage_percent <- total_coverage/(global_max - global_min) * 100
+    return(coverage_percent)
 }
 
 #' Filters subsets based on the coverage.
@@ -97,8 +94,8 @@ compute_coverage <- function(subset, global_max, global_min) {
 #' @return List A list of subsets which pass the coverage threshold (their coverage is higher than the threshold)
 #' @export
 filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global_max, global_min) {
-  filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
-  return(filtered_subsets)
+    filtered_subsets <- Filter(function(x) compute_coverage(x, global_max, global_min) > coverage_threshold, subsets)
+    return(filtered_subsets)
 }
 
 #' Computes the scores for individual subsets.
@@ -108,21 +105,15 @@ filter_subsets_based_on_coverage <- function(subsets, coverage_threshold, global
 #' @return List List of scores for individual parameters.
 #' @export
 compute_scores <- function(combination) {
-  series <- paste0(combination$Series)
-  total_abundance <- sum(combination$Abundance.Score)
-  total_series_length <- sum(combination$Series.Length)
-  peak_score <- sum(1 / (combination$Peak.Score))
-  peak_distance_proximity <- sum(1 / (combination$Peak.Distance - 1))
-  series_id <- paste(combination$Series, collapse = " ")
+    series <- paste0(combination$Series)
+    total_abundance <- sum(combination$Abundance.Score)
+    total_series_length <- sum(combination$Series.Length)
+    peak_score <- sum(1/(combination$Peak.Score))
+    peak_distance_proximity <- sum(1/(combination$Peak.Distance - 1))
+    series_id <- paste(combination$Series, collapse = " ")
 
-  return(list(
-    series = series,
-    total_abundance = total_abundance,
-    total_series_length = total_series_length,
-    peak_proximity = peak_score,
-    peak_distance_proximity = peak_distance_proximity,
-    series_id = series_id
-  ))
+    return(list(series = series, total_abundance = total_abundance, total_series_length = total_series_length, peak_proximity = peak_score, peak_distance_proximity = peak_distance_proximity,
+        series_id = series_id))
 }
 
 #' Compute a sum score for the whole combination.
@@ -133,13 +124,13 @@ compute_scores <- function(combination) {
 #' @importFrom dplyr %>%
 #' @export
 compute_final_score <- function(scores_df) {
-  final_score <- scores_df %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
-    dplyr::arrange(desc(sum_score)) %>%
-    dplyr::ungroup() 
+    final_score <- scores_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(sum_score = sum(total_abundance, total_series_length, peak_proximity, peak_distance_proximity)) %>%
+        dplyr::arrange(desc(sum_score)) %>%
+        dplyr::ungroup()
 
-  return(final_score)
+    return(final_score)
 }
 
 #' Selects final series.
@@ -154,18 +145,18 @@ compute_final_score <- function(scores_df) {
 #' @importFrom dplyr %>%
 #' @export
 find_final_series <- function(scores_df, number_of_combinations, fill_series) {
-  final_series <- compute_final_score(scores_df)
+    final_series <- compute_final_score(scores_df)
 
-  if (fill_series == FALSE) {
-    final_series <- final_series %>%
-      dplyr::slice_head(n = number_of_combinations)
-  } else {
-    final_series <- final_series %>%
-      dplyr::distinct(series, .keep_all = TRUE) %>%
-      dplyr::slice_head(n = 10)
-  }
+    if (fill_series == FALSE) {
+        final_series <- final_series %>%
+            dplyr::slice_head(n = number_of_combinations)
+    } else {
+        final_series <- final_series %>%
+            dplyr::distinct(series, .keep_all = TRUE) %>%
+            dplyr::slice_head(n = 10)
+    }
 
-  return(final_series)
+    return(final_series)
 }
 
 #' Attempts to find most suitable series for recalibration.
@@ -201,34 +192,27 @@ find_final_series <- function(scores_df, number_of_combinations, fill_series) {
 #'
 #' @return A dataframe of n-10 best-scoring series.
 #' @export
-FindRecalSeries <- function(df,
-                        global_min,
-                        global_max,
-                        number_of_combinations,
-                        abundance_score_threshold,
-                        peak_distance_threshold,
-                        coverage_threshold,
-                        fill_series) {
-  # Pre-filter and arrange the data
-  df <- filter_recal_series(df, abundance_score_threshold, peak_distance_threshold)
+FindRecalSeries <- function(df, global_min, global_max, number_of_combinations, abundance_score_threshold, peak_distance_threshold, coverage_threshold, fill_series) {
+    # Pre-filter and arrange the data
+    df <- filter_recal_series(df, abundance_score_threshold, peak_distance_threshold)
 
-  # Create all combinations of ions
-  subsets <- compute_subsets(df, number_of_combinations)
+    # Create all combinations of ions
+    subsets <- compute_subsets(df, number_of_combinations)
 
-  # Filter the subsets based on coverage threshold
-  subsets_filtered <- filter_subsets_based_on_coverage(subsets, coverage_threshold, global_max, global_min)
+    # Filter the subsets based on coverage threshold
+    subsets_filtered <- filter_subsets_based_on_coverage(subsets, coverage_threshold, global_max, global_min)
 
-  # Compute the scores
-  scores <- lapply(subsets_filtered, function(x) {
-    compute_scores(x)
-  })
+    # Compute the scores
+    scores <- lapply(subsets_filtered, function(x) {
+        compute_scores(x)
+    })
 
-  # Append all scored combinations into a dataframe
-  scores_df <- do.call(rbind, lapply(scores, as.data.frame))
+    # Append all scored combinations into a dataframe
+    scores_df <- do.call(rbind, lapply(scores, as.data.frame))
 
-  # Filter for final series
-  final_series <- find_final_series(scores_df, number_of_combinations, fill_series)
+    # Filter for final series
+    final_series <- find_final_series(scores_df, number_of_combinations, fill_series)
 
-  # Return the top scoring series
-  return(final_series)
+    # Return the top scoring series
+    return(final_series)
 }

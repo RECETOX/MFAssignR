@@ -11,6 +11,125 @@ ch2o_mass <- 30.01056468
 c13_isodiff <- 1.0033548380
 c13_isodiff_double <- 2.006709676
 
+extend_known_formulas <- function(known, unknown, DummyOut, H_Cmax, H_Cmin, O_Cmax, O_Cmin, Ambigcheck) {
+  knownCH2 <- known[c(
+    "RA", "Exp_mass", "KMD_CH2", "z_CH2", "C", "H", "O", "N", "S", "P", "E",
+    "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )]
+  names(knownCH2)[2] <- "base_mass"
+  Step1 <- merge(unknown, knownCH2, by.x = c("KMD_CH2", "z_CH2"), by.y = c("KMD_CH2", "z_CH2"))
+  Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass)) / 14.01565)
+  Step1$C <- Step1$C + Step1$CH2_num
+  Step1$H <- Step1$H + 2 * Step1$CH2_num
+  Step1$Type <- "CH2"
+  Step1$form <- paste(Step1$C, Step1$H, Step1$O, Step1$N, Step1$S, Step1$P, Step1$E, Step1$S34,
+    Step1$N15, Step1$D, Step1$Cl, Step1$Fl, Step1$Cl37, Step1$M, Step1$NH4,
+    Step1$POE, Step1$NOE,
+    sep = "_"
+  )
+  Step1 <- Step1[-c(39)]
+
+  knownO <- known[c(
+    "RA", "Exp_mass", "KMD_O", "z_O", "C", "H", "O", "N", "S", "P", "E",
+    "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )]
+  names(knownO)[2] <- "base_mass"
+  Step2 <- merge(unknown, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
+  Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
+  Step2$O <- Step2$O + Step2$O_num
+  Step2$Type <- "O"
+  Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
+    Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
+    Step2$POE, Step2$NOE,
+    sep = "_"
+  )
+  Step2 <- Step2[-c(39)]
+
+  knownH2 <- known[c(
+    "RA", "Exp_mass", "KMD_H2", "z_H2", "C", "H", "O", "N", "S", "P", "E",
+    "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )]
+  names(knownH2)[2] <- "base_mass"
+  Step3 <- merge(unknown, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
+  Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
+  Step3$H <- Step3$H + 2 * Step3$H2_num
+  Step3$Type <- "H2"
+  Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
+    Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
+    Step3$POE, Step3$NOE,
+    sep = "_"
+  )
+  Step3 <- Step3[-c(39)]
+
+  knownH2O <- known[c(
+    "RA", "Exp_mass", "KMD_H2O", "z_H2O", "C", "H", "O", "N", "S", "P", "E",
+    "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )]
+  names(knownH2O)[2] <- "base_mass"
+  Step4 <- merge(unknown, knownH2O, by.x = c("KMD_H2O", "z_H2O"), by.y = c("KMD_H2O", "z_H2O"))
+  Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass)) / 18.01056468)
+  Step4$H <- Step4$H + 2 * Step4$H2O_num
+  Step4$O <- Step4$O + Step4$H2O_num
+  Step4$Type <- "H2O"
+  Step4$form <- paste(Step4$C, Step4$H, Step4$O, Step4$N, Step4$S, Step4$P, Step4$E, Step4$S34,
+    Step4$N15, Step4$D, Step4$Cl, Step4$Fl, Step4$Cl37, Step4$M, Step4$NH4,
+    Step4$POE, Step4$NOE,
+    sep = "_"
+  )
+  Step4 <- Step4[-c(39)]
+
+  knownCH2O <- known[c(
+    "RA", "Exp_mass", "KMD_CH2O", "z_CH2O", "C", "H", "O", "N", "S", "P", "E",
+    "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
+  )]
+  names(knownCH2O)[2] <- "base_mass"
+  Step5 <- merge(unknown, knownCH2O, by.x = c("KMD_CH2O", "z_CH2O"), by.y = c("KMD_CH2O", "z_CH2O"))
+  Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass)) / 30.01056468)
+  Step5$H <- Step5$H + 2 * Step5$CH2O_num
+  Step5$O <- Step5$O + Step5$CH2O_num
+  Step5$C <- Step5$C + Step5$CH2O_num
+  Step5$Type <- "CH2O"
+  Step5$form <- paste(Step5$C, Step5$H, Step5$O, Step5$N, Step5$S, Step5$P, Step5$E, Step5$S34,
+    Step5$N15, Step5$D, Step5$Cl, Step5$Fl, Step5$Cl37, Step5$M, Step5$NH4,
+    Step5$POE, Step5$NOE,
+    sep = "_"
+  )
+  Step5 <- Step5[-c(39)]
+
+  Out <- rbind(Step1, Step2, Step3, Step4, Step5)
+  Out <- Out[(Out$C >= 2 & Out$H >= 4 & Out$O >= 0), ]
+  Out$H_C <- Out$H / Out$C # Quick internal QA to limit bad assignments
+  Out$O_C <- Out$O / Out$C
+  Out <- Out[Out$H_C < H_Cmax & Out$H_C > H_Cmin &
+    Out$O_C < O_Cmax & Out$O_C > O_Cmin, ]
+  Out <- Out[!names(Out) %in% c("H_C", "O_C")]
+
+  Out <- rbind(Out, DummyOut)
+
+  Out_form <- dplyr::group_by(Out, Exp_mass, RA.x, form) # LCMS
+
+  Out_form$number <- 1
+  Out_form <- dplyr::summarize_at(Out_form, "number", sum, na.rm = TRUE)
+
+  # Turns on or off ambiguity based on user input
+  if (Ambigcheck == "off") {
+    Out_form <- dplyr::filter(Out_form, number == max(number))
+  }
+
+  Out_form <- unique(Out_form)
+  Out2 <- merge(Out, Out_form, by.x = c("Exp_mass", "RA.x", "form"), by.y = c("Exp_mass", "RA.x", "form")) # LCMS
+  Out3 <- dplyr::distinct(Out2, form, Exp_mass, RA.x, .keep_all = TRUE) # LCMS
+  Out3 <- Out3[!names(Out3) %in% c("number")]
+
+  Next <- Out3[!names(Out3) %in% c("base_mass", "Type", "form", "RA.y")]
+  colnames(Next)[colnames(Next) == "RA.x"] <- "RA"
+  Next <- rbind(known, Next)
+  Next <- unique(Next)
+  Unambig <- Next
+
+  return(Unambig)
+}
+
 #' Assigns all possible CHO molecular formulae to each row of input data frame
 #'
 #' MFAssignCHO() assigns all possible molecular formulae to each
@@ -694,129 +813,15 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
       x <- 1
       repeat{
         x <- x + 1
-        knownCH2 <- known[c(
-          "RA", "Exp_mass", "KMD_CH2", "z_CH2", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownCH2)[2] <- "base_mass"
-        Step1 <- merge(unknown, knownCH2, by.x = c("KMD_CH2", "z_CH2"), by.y = c("KMD_CH2", "z_CH2"))
-        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass)) / 14.01565)
-        Step1$C <- Step1$C + Step1$CH2_num
-        Step1$H <- Step1$H + 2 * Step1$CH2_num
-        Step1$Type <- "CH2"
-        Step1$form <- paste(Step1$C, Step1$H, Step1$O, Step1$N, Step1$S, Step1$P, Step1$E, Step1$S34,
-          Step1$N15, Step1$D, Step1$Cl, Step1$Fl, Step1$Cl37, Step1$M, Step1$NH4,
-          Step1$POE, Step1$NOE,
-          sep = "_"
-        )
-        Step1 <- Step1[-c(39)]
 
-
-        knownO <- known[c(
-          "RA", "Exp_mass", "KMD_O", "z_O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownO)[2] <- "base_mass"
-        Step2 <- merge(unknown, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
-        Step2$O <- Step2$O + Step2$O_num
-        Step2$Type <- "O"
-        Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
-          Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
-          Step2$POE, Step2$NOE,
-          sep = "_"
-        )
-        Step2 <- Step2[-c(39)]
-
-        knownH2 <- known[c(
-          "RA", "Exp_mass", "KMD_H2", "z_H2", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownH2)[2] <- "base_mass"
-        Step3 <- merge(unknown, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
-        Step3$H <- Step3$H + 2 * Step3$H2_num
-        Step3$Type <- "H2"
-        Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
-          Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
-          Step3$POE, Step3$NOE,
-          sep = "_"
-        )
-        Step3 <- Step3[-c(39)]
-
-        knownH2O <- known[c(
-          "RA", "Exp_mass", "KMD_H2O", "z_H2O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownH2O)[2] <- "base_mass"
-        Step4 <- merge(unknown, knownH2O, by.x = c("KMD_H2O", "z_H2O"), by.y = c("KMD_H2O", "z_H2O"))
-        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass)) / 18.01056468)
-        Step4$H <- Step4$H + 2 * Step4$H2O_num
-        Step4$O <- Step4$O + Step4$H2O_num
-        Step4$Type <- "H2O"
-        Step4$form <- paste(Step4$C, Step4$H, Step4$O, Step4$N, Step4$S, Step4$P, Step4$E, Step4$S34,
-          Step4$N15, Step4$D, Step4$Cl, Step4$Fl, Step4$Cl37, Step4$M, Step4$NH4,
-          Step4$POE, Step4$NOE,
-          sep = "_"
-        )
-        Step4 <- Step4[-c(39)]
-
-        knownCH2O <- known[c(
-          "RA", "Exp_mass", "KMD_CH2O", "z_CH2O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownCH2O)[2] <- "base_mass"
-        Step5 <- merge(unknown, knownCH2O, by.x = c("KMD_CH2O", "z_CH2O"), by.y = c("KMD_CH2O", "z_CH2O"))
-        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass)) / 30.01056468)
-        Step5$H <- Step5$H + 2 * Step5$CH2O_num
-        Step5$O <- Step5$O + Step5$CH2O_num
-        Step5$C <- Step5$C + Step5$CH2O_num
-        Step5$Type <- "CH2O"
-        Step5$form <- paste(Step5$C, Step5$H, Step5$O, Step5$N, Step5$S, Step5$P, Step5$E, Step5$S34,
-          Step5$N15, Step5$D, Step5$Cl, Step5$Fl, Step5$Cl37, Step5$M, Step5$NH4,
-          Step5$POE, Step5$NOE,
-          sep = "_"
-        )
-        Step5 <- Step5[-c(39)]
-
-        Out <- rbind(Step1, Step2, Step3, Step4, Step5)
-        Out <- Out[(Out$C >= 2 & Out$H >= 4 & Out$O >= 0), ]
-        Out$H_C <- Out$H / Out$C # Quick internal QA to limit bad assignments
-        Out$O_C <- Out$O / Out$C
-        Out <- Out[Out$H_C < H_Cmax & Out$H_C > H_Cmin &
-          Out$O_C < O_Cmax & Out$O_C > O_Cmin, ]
-        Out <- Out[!names(Out) %in% c("H_C", "O_C")]
-
-
-        Out <- rbind(Out, DummyOut)
-
-        Out_form <- dplyr::group_by(Out, Exp_mass, RA.x, form) # LCMS
-
-        Out_form$number <- 1
-        Out_form <- dplyr::summarize_at(Out_form, "number", sum, na.rm = TRUE)
-
-        # Turns on or off ambiguity based on user input
-        if (Ambigcheck == "off") {
-          Out_form <- dplyr::filter(Out_form, number == max(number))
-        }
-
-        Out_form <- unique(Out_form)
-        Out2 <- merge(Out, Out_form, by.x = c("Exp_mass", "RA.x", "form"), by.y = c("Exp_mass", "RA.x", "form")) # LCMS
-        Out3 <- dplyr::distinct(Out2, form, Exp_mass, RA.x, .keep_all = TRUE) # LCMS
-        Out3 <- Out3[!names(Out3) %in% c("number")]
-
-
-        Next <- Out3[!names(Out3) %in% c("base_mass", "Type", "form", "RA.y")]
-        colnames(Next)[colnames(Next) == "RA.x"] <- "RA"
-        Next <- rbind(known, Next)
-        Next <- unique(Next)
-        Unambig <- Next
+        Unambig <- extend_known_formulas(known, unknown, DummyOut, H_Cmax, H_Cmin, O_Cmax, O_Cmin, Ambigcheck)
 
         masses <- Unambig[c("Exp_mass", "RA", "C")] # LCMS
         names(masses)[3] <- "Var"
         Ambig <- merge(unknown, masses, by.x = c("Exp_mass", "RA"), by.y = c("Exp_mass", "RA"), all = T) # LCMS
         Ambig <- Ambig[is.na(Ambig$Var), ]
         Ambig <- Ambig[-19]
+
         Ambigreturn <- unique(Ambig)
 
         if (x == 2) {
@@ -1261,123 +1266,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
       x <- 1
       repeat{
         x <- x + 1
-        knownCH2 <- known[c(
-          "RA", "Exp_mass", "KMD_CH2", "z_CH2", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownCH2)[2] <- "base_mass"
-        Step1 <- merge(unknown, knownCH2, by.x = c("KMD_CH2", "z_CH2"), by.y = c("KMD_CH2", "z_CH2"))
-        Step1$CH2_num <- round(((Step1$Exp_mass - Step1$base_mass)) / 14.01565)
-        Step1$C <- Step1$C + Step1$CH2_num
-        Step1$H <- Step1$H + 2 * Step1$CH2_num
-        Step1$Type <- "CH2"
-        Step1$form <- paste(Step1$C, Step1$H, Step1$O, Step1$N, Step1$S, Step1$P, Step1$E, Step1$S34,
-          Step1$N15, Step1$D, Step1$Cl, Step1$Fl, Step1$Cl37, Step1$M, Step1$NH4,
-          Step1$POE, Step1$NOE,
-          sep = "_"
-        )
-        Step1 <- Step1[-c(39)]
-
-
-        knownO <- known[c(
-          "RA", "Exp_mass", "KMD_O", "z_O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownO)[2] <- "base_mass"
-        Step2 <- merge(unknown, knownO, by.x = c("KMD_O", "z_O"), by.y = c("KMD_O", "z_O"))
-        Step2$O_num <- round(((Step2$Exp_mass - Step2$base_mass)) / 15.9949146223)
-        Step2$O <- Step2$O + Step2$O_num
-        Step2$Type <- "O"
-        Step2$form <- paste(Step2$C, Step2$H, Step2$O, Step2$N, Step2$S, Step2$P, Step2$E, Step2$S34,
-          Step2$N15, Step2$D, Step2$Cl, Step2$Fl, Step2$Cl37, Step2$M, Step2$NH4,
-          Step2$POE, Step2$NOE,
-          sep = "_"
-        )
-        Step2 <- Step2[-c(39)]
-
-        knownH2 <- known[c(
-          "RA", "Exp_mass", "KMD_H2", "z_H2", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownH2)[2] <- "base_mass"
-        Step3 <- merge(unknown, knownH2, by.x = c("KMD_H2", "z_H2"), by.y = c("KMD_H2", "z_H2"))
-        Step3$H2_num <- round(((Step3$Exp_mass - Step3$base_mass)) / 2.01565)
-        Step3$H <- Step3$H + 2 * Step3$H2_num
-        Step3$Type <- "H2"
-        Step3$form <- paste(Step3$C, Step3$H, Step3$O, Step3$N, Step3$S, Step3$P, Step3$E, Step3$S34,
-          Step3$N15, Step3$D, Step3$Cl, Step3$Fl, Step3$Cl37, Step3$M, Step3$NH4,
-          Step3$POE, Step3$NOE,
-          sep = "_"
-        )
-        Step3 <- Step3[-c(39)]
-
-        knownH2O <- known[c(
-          "RA", "Exp_mass", "KMD_H2O", "z_H2O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownH2O)[2] <- "base_mass"
-        Step4 <- merge(unknown, knownH2O, by.x = c("KMD_H2O", "z_H2O"), by.y = c("KMD_H2O", "z_H2O"))
-        Step4$H2O_num <- round(((Step4$Exp_mass - Step4$base_mass)) / 18.01056468)
-        Step4$H <- Step4$H + 2 * Step4$H2O_num
-        Step4$O <- Step4$O + Step4$H2O_num
-        Step4$Type <- "H2O"
-        Step4$form <- paste(Step4$C, Step4$H, Step4$O, Step4$N, Step4$S, Step4$P, Step4$E, Step4$S34,
-          Step4$N15, Step4$D, Step4$Cl, Step4$Fl, Step4$Cl37, Step4$M, Step4$NH4,
-          Step4$POE, Step4$NOE,
-          sep = "_"
-        )
-        Step4 <- Step4[-c(39)]
-
-        knownCH2O <- known[c(
-          "RA", "Exp_mass", "KMD_CH2O", "z_CH2O", "C", "H", "O", "N", "S", "P", "E",
-          "S34", "N15", "D", "Cl", "Fl", "Cl37", "M", "NH4", "POE", "NOE", "Z"
-        )]
-        names(knownCH2O)[2] <- "base_mass"
-        Step5 <- merge(unknown, knownCH2O, by.x = c("KMD_CH2O", "z_CH2O"), by.y = c("KMD_CH2O", "z_CH2O"))
-        Step5$CH2O_num <- round(((Step5$Exp_mass - Step5$base_mass)) / 30.01056468)
-        Step5$H <- Step5$H + 2 * Step5$CH2O_num
-        Step5$O <- Step5$O + Step5$CH2O_num
-        Step5$C <- Step5$C + Step5$CH2O_num
-        Step5$Type <- "CH2O"
-        Step5$form <- paste(Step5$C, Step5$H, Step5$O, Step5$N, Step5$S, Step5$P, Step5$E, Step5$S34,
-          Step5$N15, Step5$D, Step5$Cl, Step5$Fl, Step5$Cl37, Step5$M, Step5$NH4,
-          Step5$POE, Step5$NOE,
-          sep = "_"
-        )
-        Step5 <- Step5[-c(39)]
-
-        Out <- rbind(Step1, Step2, Step3, Step4, Step5)
-        Out <- Out[(Out$C >= 2 & Out$H >= 4 & Out$O >= 0), ]
-        Out$H_C <- Out$H / Out$C # Quick internal QA to limit bad assignments
-        Out$O_C <- Out$O / Out$C
-        Out <- Out[Out$H_C < H_Cmax & Out$H_C > H_Cmin &
-          Out$O_C < O_Cmax & Out$O_C > O_Cmin, ]
-        Out <- Out[!names(Out) %in% c("H_C", "O_C")]
-
-
-        Out <- rbind(Out, DummyOut)
-
-        Out_form <- dplyr::group_by(Out, Exp_mass, RA.x, form) # LCMS
-
-        Out_form$number <- 1
-        Out_form <- dplyr::summarize_at(Out_form, "number", sum, na.rm = TRUE)
-
-        # Turns on or off ambiguity based on user input
-        if (Ambigcheck == "off") {
-          Out_form <- dplyr::filter(Out_form, number == max(number))
-        }
-
-        Out_form <- unique(Out_form)
-        Out2 <- merge(Out, Out_form, by.x = c("Exp_mass", "RA.x", "form"), by.y = c("Exp_mass", "RA.x", "form")) # LCMS
-        Out3 <- dplyr::distinct(Out2, form, Exp_mass, RA.x, .keep_all = TRUE) # LCMS
-        Out3 <- Out3[!names(Out3) %in% c("number")]
-
-
-        Next <- Out3[!names(Out3) %in% c("base_mass", "Type", "form", "RA.y")]
-        colnames(Next)[colnames(Next) == "RA.x"] <- "RA"
-        Next <- rbind(known, Next)
-        Next <- unique(Next)
-        Unambig <- Next
+        Unambig <- extend_known_formulas(known, unknown, DummyOut, H_Cmax, H_Cmin, O_Cmax, O_Cmin, Ambigcheck)
 
         masses <- Unambig[c("Exp_mass", "RA", "C")] # LCMS
         names(masses)[3] <- "Var"
@@ -1769,68 +1658,10 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
 
 
-  MZ <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA"), color = "green") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "C13_mass", xend = "C13_mass", y = 0, yend = "C13_Abund"), color = "blue") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "C13_mass2", xend = "C13_mass2", y = 0, yend = "C13_Abund2"), color = "blue") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "S34_mass", xend = "S34_mass", y = 0, yend = "S34_Abund"), color = "blue") +
-    ggplot2::geom_segment(data = unassigned, size = 0.7, ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "RA"), color = "red") +
-    ggplot2::coord_cartesian(xlim = c(min(rawpeaks$mass), max(rawpeaks$mass))) +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "DBE") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 15),
-      legend.text = ggplot2::element_text(face = "bold", size = 15), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-
-  Error <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = Unambig, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1 / 3) +
-    ggplot2::geom_point(data = Ambigout, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1 / 3) +
-    ggplot2::coord_cartesian(xlim = c(min(records1$Exp_mass), max(records1$Exp_mass)), ylim = c(min(records1$AE_ppm), max(records1$AE_ppm))) +
-    ggplot2::scale_colour_manual(name = "Ambiguity", values = c(Unambiguous = "blue", Ambiguous = "red")) +
-    ggplot2::labs(x = "Ion Mass", y = "Absolute Error (ppm)", color = "Ambiguity", title = "Error Plot") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 11),
-      legend.text = ggplot2::element_text(face = "bold", size = 10), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-
-  MZgroups <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = PD, size = 0.7, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA", color = "Tag2")) +
-    ggplot2::facet_wrap(~Tag, ncol = 1, scales = "free_y") +
-    ggplot2::scale_colour_manual(name = "Groups", values = form_palette) +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "DBE") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 12),
-      legend.text = ggplot2::element_text(face = "bold", size = 12), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-  VK <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = PD, ggplot2::aes_string(x = "O_C", y = "H_C", color = "Tag2"), alpha = 1 / 3) +
-    ggplot2::facet_wrap(~Tag, ncol = 2) +
-    # ggplot2::coord_cartesian(xlim = c(min(PD$O_C), max(PD$O_C), ylim = c(min(PD$H_C), max(PD$H_C)))) +
-    ggplot2::scale_colour_manual(name = "Groups", values = form_palette) +
-    ggplot2::labs(x = "Oxygen-to-Carbon Ratio", y = "Hydrogen-to-Carbon Ratio", color = "Groups", title = "van Krevelen Plot") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 11),
-      legend.text = ggplot2::element_text(face = "bold", size = 10), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
+  MZ <- create_mass_spectrum_plot(records1, unassigned, rawpeaks)
+  Error <- create_error_plot(Unambig, Ambigout, records1)
+  MZgroups <- create_mass_spectrum_group_plot(PD, form_palette)
+  VK <- create_van_krevelen_plot(PD, form_palette)
 
   colnames(Unambig)[colnames(Unambig) == "RA"] <- "abundance"
   colnames(Unambig)[colnames(Unambig) == "Exp_mass"] <- "exp_mass"
@@ -4588,67 +4419,10 @@ MFAssign <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW = 10
   # print(form_palette)
   ###############
 
-  MZ <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA"), color = "green") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "C13_mass", xend = "C13_mass", y = 0, yend = "C13_Abund"), color = "blue") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "C13_mass2", xend = "C13_mass2", y = 0, yend = "C13_Abund2"), color = "blue") +
-    ggplot2::geom_segment(data = records1, size = 0.7, ggplot2::aes_string(x = "S34_mass", xend = "S34_mass", y = 0, yend = "S34_Abund"), color = "blue") +
-    ggplot2::geom_segment(data = unassigned, size = 0.7, ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "RA"), color = "red") +
-    ggplot2::coord_cartesian(xlim = c(min(rawpeaks$mass), max(rawpeaks$mass))) +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "DBE") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 15),
-      legend.text = ggplot2::element_text(face = "bold", size = 15), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-  Error <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = Unambig, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1 / 3) +
-    ggplot2::geom_point(data = Ambigout, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1 / 3) +
-    ggplot2::coord_cartesian(xlim = c(min(records1$Exp_mass), max(records1$Exp_mass)), ylim = c(min(records1$AE_ppm), max(records1$AE_ppm))) +
-    ggplot2::scale_colour_manual(name = "Ambiguity", values = c(Unambiguous = "blue", Ambiguous = "red")) +
-    ggplot2::labs(x = "Ion Mass", y = "Absolute Error (ppm)", color = "Ambiguity", title = "Error Plot") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 11),
-      legend.text = ggplot2::element_text(face = "bold", size = 10), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-
-  MZgroups <- ggplot2::ggplot() +
-    ggplot2::geom_segment(data = PD, size = 0.7, ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA", color = "Tag2")) +
-    ggplot2::facet_wrap(~Tag, ncol = 1, scales = "free_y") +
-    ggplot2::scale_colour_manual(name = "Groups", values = form_palette) +
-    ggplot2::theme_bw() +
-    ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "DBE") +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 12),
-      legend.text = ggplot2::element_text(face = "bold", size = 12), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
-
-  VK <- ggplot2::ggplot() +
-    ggplot2::geom_point(data = PD, ggplot2::aes_string(x = "O_C", y = "H_C", color = "Tag2"), alpha = 1 / 3) +
-    ggplot2::facet_wrap(~Tag, ncol = 2) +
-    # ggplot2::coord_cartesian(xlim = c(min(PD$O_C), max(PD$O_C), ylim = c(min(PD$H_C), max(PD$H_C)))) +
-    ggplot2::scale_colour_manual(name = "Groups", values = form_palette) +
-    ggplot2::labs(x = "Oxygen-to-Carbon Ratio", y = "Hydrogen-to-Carbon Ratio", color = "Groups", title = "van Krevelen Plot") +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 15, face = "bold"), strip.text = ggplot2::element_text(size = 15, face = "bold"),
-      axis.text = ggplot2::element_text(size = 15, face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 11),
-      legend.text = ggplot2::element_text(face = "bold", size = 10), panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.major.x = ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
-      plot.title = ggplot2::element_text(size = 16, face = "bold")
-    )
+  MZ <- create_mass_spectrum_plot(records1, unassigned, rawpeaks)
+  Error <- create_error_plot(Unambig, Ambigout, records1)
+  MZgroups <- create_mass_spectrum_group_plot(PD, form_palette)
+  VK <- create_van_krevelen_plot(PD, form_palette)
 
   colnames(Unambig)[colnames(Unambig) == "RA"] <- "abundance"
   colnames(Unambig)[colnames(Unambig) == "Exp_mass"] <- "exp_mass"

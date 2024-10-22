@@ -7,7 +7,7 @@
 #'
 #' When the KMD is calculated for all peaks
 #' in a raw mass spectrum, the more intense
-#' analyte peaks form "islands" surrounded
+#' analyte peaks form 'islands' surrounded
 #' by a sea of low intensity noise peaks.
 #' using the mathematical limits of the KMD
 #' calculation the slope of a KMD plot can be
@@ -46,7 +46,7 @@
 #' no analyte peaks are incorporated into the noise estimation.
 #' The upper limit is set at 0.2 so that it does not
 #' interact with any potentially doubly charged peaks, or the
-#' "echo" of those doubly charged peaks. Both of these values
+#' 'echo' of those doubly charged peaks. Both of these values
 #' can be changed if desired by the user.
 #'
 #' The x intercept for the upper and lower bounds are set
@@ -69,60 +69,40 @@
 #'
 #' @export
 KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = NA) {
-  if (is.na(upper.x)) upper.x <- max(df$mass)
-  if (is.na(lower.x)) lower.x <- min(df$mass)
+    if (is.na(upper.x))
+        upper.x <- max(df$mass)
+    if (is.na(lower.x))
+        lower.x <- min(df$mass)
 
-  # Init the dataframe with mass defect information
-  # magic number is mass of CH2 which we use for the correction
-  df$kendrick_mass <- df$mass * (14 / 14.01565)
-  df$nominal_mass <- round(df$mass) # maybe this should actually be floor instead of round as the nominal mass is always rounded down?
-  df$kendrick_mass_defect <- df$nominal_mass - df$kendrick_mass
-  df$log_int <- log(df$intensity)
+    # Init the dataframe with mass defect information magic number is mass of CH2 which we use for the correction
+    df$kendrick_mass <- df$mass * (14/14.01565)
+    df$nominal_mass <- round(df$mass)  # maybe this should actually be floor instead of round as the nominal mass is always rounded down?
+    df$kendrick_mass_defect <- df$nominal_mass - df$kendrick_mass
+    df$log_int <- log(df$intensity)
 
-  df <- df[order(df$intensity), ]
+    df <- df[order(df$intensity), ]
 
-  magic_number <- 0.0011232
+    magic_number <- 0.0011232
 
-  # Filtering the actual data within the S/N area and calculating the average intensity
-  lower_bound <- magic_number * df$mass + lower.y
-  upper_bound <- magic_number * df$mass + upper.y
+    # Filtering the actual data within the S/N area and calculating the average intensity
+    lower_bound <- magic_number * df$mass + lower.y
+    upper_bound <- magic_number * df$mass + upper.y
 
-  SN <- dplyr::filter(df, dplyr::between(kendrick_mass_defect, lower_bound, upper_bound))
-  SN <- dplyr::filter(SN, dplyr::between(mass, lower.x, upper.x))
+    SN <- dplyr::filter(df, dplyr::between(kendrick_mass_defect, lower_bound, upper_bound))
+    SN <- dplyr::filter(SN, dplyr::between(mass, lower.x, upper.x))
 
-  Noise <- exp(mean(SN$log_int))
+    Noise <- exp(mean(SN$log_int))
 
-  df <- dplyr::filter(df, dplyr::between(log_int, -100, 100))
+    df <- dplyr::filter(df, dplyr::between(log_int, -100, 100))
 
-  # Generate plot showing KMD of raw data and the boundaries for S/N cut.
-  KMD <- ggplot2::ggplot() +
-    ggplot2::geom_point(
-      data = df,
-      ggplot2::aes_string(
-        x = "mass",
-        y = "kendrick_mass_defect",
-        color = "log_int"
-      ), alpha = 1 / 3
-    ) +
-    ggplot2::geom_abline(slope = magic_number, intercept = lower.y, color = "red", size = 1) +
-    ggplot2::geom_abline(slope = magic_number, intercept = upper.y, color = "red", size = 1) +
-    ggplot2::geom_vline(xintercept = lower.x, color = "red", size = 1) +
-    ggplot2::geom_vline(xintercept = upper.x, color = "red", size = 1) +
-    ggplot2::scale_color_gradientn(colors = colorRamps::blue2red(50), limit = c(min(df$log_int), max(df$log_int))) +
-    ggplot2::labs(
-      x = "Ion Mass", y = "Kendrick Mass Defect",
-      title = "KMD Signal to Noise Determination Plot", color = "ln(int)"
-    ) +
-    ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.title = ggplot2::element_text(size = 18, face = "bold"),
-      strip.text = ggplot2::element_text(size = 18, face = "bold"),
-      axis.text = ggplot2::element_text(size = 17, face = "bold"),
-      legend.title = ggplot2::element_text(face = "bold", size = 15),
-      legend.text = ggplot2::element_text(face = "bold", size = 14),
-      strip.background = ggplot2::element_blank()
-    )
-  return(list(Noise = Noise, KMD = KMD))
+    # Generate plot showing KMD of raw data and the boundaries for S/N cut.
+    KMD <- ggplot2::ggplot() + ggplot2::geom_point(data = df, ggplot2::aes_string(x = "mass", y = "kendrick_mass_defect", color = "log_int"), alpha = 1/3) + ggplot2::geom_abline(slope = magic_number,
+        intercept = lower.y, color = "red", size = 1) + ggplot2::geom_abline(slope = magic_number, intercept = upper.y, color = "red", size = 1) + ggplot2::geom_vline(xintercept = lower.x,
+        color = "red", size = 1) + ggplot2::geom_vline(xintercept = upper.x, color = "red", size = 1) + ggplot2::scale_color_gradientn(colors = colorRamps::blue2red(50), limit = c(min(df$log_int),
+        max(df$log_int))) + ggplot2::labs(x = "Ion Mass", y = "Kendrick Mass Defect", title = "KMD Signal to Noise Determination Plot", color = "ln(int)") + ggplot2::theme_bw() +
+        ggplot2::theme(axis.title = ggplot2::element_text(size = 18, face = "bold"), strip.text = ggplot2::element_text(size = 18, face = "bold"), axis.text = ggplot2::element_text(size = 17,
+            face = "bold"), legend.title = ggplot2::element_text(face = "bold", size = 15), legend.text = ggplot2::element_text(face = "bold", size = 14), strip.background = ggplot2::element_blank())
+    return(list(Noise = Noise, KMD = KMD))
 }
 
 ##########################################
@@ -144,15 +124,14 @@ KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = 
 #'
 #' @import ggplot2
 #' @export
-SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) { # plots a data set displaying the SN cut around a specific mass
-  df <- df[c(2, 1)]
-  names(df)[2] <- "mass"
-  names(df)[1] <- "Abundance"
-  df$Index <- "Bad"
-  df$Index <- replace(df$Index, df$Abundance > cut, "Good")
-  SNplot <- ggplot(df, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) +
-    geom_segment(aes(color = Index), size = 0.65, alpha = 1) +
-    geom_hline(yintercept = cut, linetype = "solid", size = 0.1) +
-    coord_cartesian(xlim = c(mass - window.x, mass + window.x), ylim = c(0, cut * window.y))
-  print(SNplot)
+SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) {
+    # plots a data set displaying the SN cut around a specific mass
+    df <- df[c(2, 1)]
+    names(df)[2] <- "mass"
+    names(df)[1] <- "Abundance"
+    df$Index <- "Bad"
+    df$Index <- replace(df$Index, df$Abundance > cut, "Good")
+    SNplot <- ggplot(df, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) + geom_segment(aes(color = Index), size = 0.65, alpha = 1) + geom_hline(yintercept = cut,
+        linetype = "solid", size = 0.1) + coord_cartesian(xlim = c(mass - window.x, mass + window.x), ylim = c(0, cut * window.y))
+    print(SNplot)
 }
