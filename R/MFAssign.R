@@ -130,6 +130,31 @@ extend_known_formulas <- function(known, unknown, DummyOut, H_Cmax, H_Cmin, O_Cm
   return(Unambig)
 }
 
+calculate_neutral_mass <- function(records1, ionMode) {
+  records1$mode <- ionMode
+
+  df1 <- records1[records1$mode == "pos" & records1$M > 0 & records1$POE == 0 & records1$NH4 == 0, ]
+  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
+
+  df1x <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 1, ]
+  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
+
+  df2 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 0, ]
+  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
+
+  df3 <- records1[records1$mode == "neg" & records1$NOE == 0, ]
+  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
+
+  df4 <- records1[records1$mode == "neg" & records1$NOE == 1, ]
+  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
+
+  df5 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 1 & records1$NH4 == 0, ]
+  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
+
+  result <- rbind(df1, df1x, df2, df3, df4, df5)
+  return(result)
+}
+
 #' Assigns all possible CHO molecular formulae to each row of input data frame
 #'
 #' MFAssignCHO() assigns all possible molecular formulae to each
@@ -524,29 +549,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
     2 * recordsdf$POE + recordsdf$Cl + recordsdf$Cl37 + recordsdf$Fl - 2 * recordsdf$NOE
 
   records1 <- recordsdf[recordsdf$C > 1 & recordsdf$O >= 0 & recordsdf$H > 0 & recordsdf$RA >= 0, ]
-
-  records1$mode <- ionMode
-
-  df1 <- records1[records1$mode == "pos" & records1$M > 0 & records1$POE == 0 & records1$NH4 == 0, ]
-  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
-
-  df1x <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 1, ]
-  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
-
-  df2 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 0, ]
-  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
-
-  df3 <- records1[records1$mode == "neg" & records1$NOE == 0, ]
-  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
-
-  df4 <- records1[records1$mode == "neg" & records1$NOE == 1, ]
-  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
-
-  df5 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 1 & records1$NH4 == 0, ]
-  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
-
-  records1 <- rbind(df1, df1x, df2, df3, df4, df5)
-
+  records1 <- calculate_neutral_mass(records1, ionMode)
   records1 <- records1[-26]
 
 
@@ -833,32 +836,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
     }
   }
   records1 <- Unambig[c(1:20)]
-
-  records1$mode <- ionMode
-
-
-
-
-  df1 <- records1[records1$mode == "pos" & records1$M > 0 & records1$POE == 0 & records1$NH4 == 0, ]
-  df1$Neutral_mass <- df1$Exp_mass - df1$M * 22.989221
-
-  df1x <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 1, ]
-  df1x$Neutral_mass <- df1x$Exp_mass - df1x$NH4 * 18.033823
-
-  df2 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 0 & records1$NH4 == 0, ]
-  df2$Neutral_mass <- df2$Exp_mass - 1.00727645216
-
-  df3 <- records1[records1$mode == "neg" & records1$NOE == 0, ]
-  df3$Neutral_mass <- df3$Exp_mass + 1.00727645216
-
-  df4 <- records1[records1$mode == "neg" & records1$NOE == 1, ]
-  df4$Neutral_mass <- df4$Exp_mass - 0.000548597
-
-  df5 <- records1[records1$mode == "pos" & records1$M == 0 & records1$POE == 1 & records1$NH4 == 0, ]
-  df5$Neutral_mass <- df5$Exp_mass + 0.000548597
-
-  records1 <- rbind(df1, df1x, df2, df3, df4, df5)
-
+  records1 <- calculate_neutral_mass(records1, ionMode)
   records1 <- records1[-c(21)]
 
   ### Standard QA steps
