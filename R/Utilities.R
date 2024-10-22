@@ -1374,3 +1374,8 @@ Valence <- function(x) {
   )
   return(y)
 }
+
+# Helper function to print warnings
+print_warning <- function(condition, message) {
+  if (condition) print(message)
+}
