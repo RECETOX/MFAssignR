@@ -68,8 +68,6 @@
 #'         noise estimation area highlighted.
 #'
 #' @export
-#'
-# df <- Raw_Neg_ML
 KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = NA) {
   if (is.na(upper.x)) upper.x <- max(df$mass)
   if (is.na(lower.x)) lower.x <- min(df$mass)

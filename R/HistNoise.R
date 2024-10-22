@@ -26,9 +26,6 @@
 #'   Histogram shows where the cut is being applied
 #'
 #' @export
-
-
-
 HistNoise <- function(df, SN = 0, bin = 0.01) {
   df <- df[c(2, 1)]
 

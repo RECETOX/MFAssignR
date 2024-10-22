@@ -101,7 +101,6 @@
 #'   VK - ggplot of van Krevelen plot, colored by molecular group
 #'
 #' @export
-
 MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000, POEx = 0, NOEx = 0, Ex = 0, Mx = 0, NH4x = 0, Zx=1, Ox = 30,
                           ppm_err = 3, SN = 0, O_Cmin = 0, O_Cmax = 2.5, H_Cmin = 0.3, H_Cmax = 3, DBEOmin = -13, DBEOmax = 13,
                           Omin = 0, max_def = 0.9, min_def = 0.5, HetCut = "off", NMScut = "on", DeNovo = 1000, nLoop = 5, Ambig = "off", MSMS = "off") {
