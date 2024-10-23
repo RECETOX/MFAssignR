@@ -252,7 +252,7 @@ generate_formulas_advanced <- function(df) {
 specialized_qa_steps <- function(df, HetCut) {
   df <- as.data.frame(df)
   df <- dplyr::group_by(df, Exp_mass, RA) # LCMS
-  
+
   if (HetCut == "on") {
     df <- dplyr::filter(df, HA == min(HA))
   }
@@ -263,6 +263,96 @@ specialized_qa_steps <- function(df, HetCut) {
   df <- df[!names(df) %in% c("HA")]
   return(df)
 }
+
+calculate_O_C <- function(O, C, E) {
+  O / (C + E)
+}
+
+calculate_H_C <- function(H, C, E) {
+  H / (C + E)
+}
+
+calculate_charge_state_differences <- function(M, NH4, POE, NOE, electron) {
+  M * EM2("M") + NH4 * EM2("NH4+") - POE * electron + NOE * electron
+}
+
+calculate_theor_mass1 <- function(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D, M, NH4, POE, NOE, electron) {
+  calculate_theor_mass(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D) + calculate_charge_state_differences(M, NH4, POE, NOE, electron)
+}
+
+calculate_theor_mass <- function(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D) {
+  EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
+    Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
+    D * EM2("D")
+}
+
+calculate_DBE <- function(C, H, Cl, Cl37, N, N15, P, Fl = 0) {
+  C - 0.5 * (H + Cl + Cl37 + Fl) + 0.5 * (N + N15 + P) + 1
+}
+
+calculate_err_ppm <- function(Neutral_mass, theor_mass) {
+  ((Neutral_mass - theor_mass) / Neutral_mass * 10^6)
+}
+
+calculate_AE_ppm <- function(Neutral_mass, theor_mass) {
+  round(abs((Neutral_mass - theor_mass) / Neutral_mass * 10^6), 2)
+}
+
+calculate_KM <- function(Exp_mass) {
+  Exp_mass * (14 / 14.01565)
+}
+
+calculate_max_LA <- function(theor_mass1) {
+  theor_mass1 / 13
+}
+
+calculate_actual_LA <- function(C, E, N, S, O, S34, P, Cl, Cl37, N15) {
+  ((C - E) + N + S + O + E + S34 + P + Cl + Cl37 + N15)
+}
+
+calculate_rule_13 <- function(actual_LA, max_LA) {
+  round(actual_LA / max_LA, 1)
+}
+
+calculate_DBEO <- function(DBE, O) {
+  DBE - O
+}
+
+calculate_max_H <- function(C) {
+  C * 2 + 2
+}
+
+calculate_H_test <- function(H, max_H) {
+  round(H / max_H, 1)
+}
+
+calculate_Senior2 <- function(H, O, C) {
+  H * Valence("H") + O * Valence("O") + C * Valence("C")
+}
+
+calculate_Senior3Atom <- function(C, H, O) {
+  C + H + O
+}
+
+calculate_Senior3Val <- function(C, H, O) {
+  C * Valence("C") + H * Valence("H") + O * Valence("O")
+}
+
+mass_defect <- function(exp_mass) {
+  abs(floor(exp_mass) - exp_mass)
+}
+
+calculate_nm <- function(exp_mass, min_def, max_def) {
+  mass_defect_floor <- mass_defect(exp_mass)
+  ifelse(mass_defect_floor >= min_def & mass_defect_floor <= max_def,
+         floor(exp_mass),
+         round(exp_mass))
+}
+
+calculate_kmd <- function(exp_mass, km, min_def, max_def) {
+  return(calculate_nm(exp_mass, min_def, max_def) - km)
+}
+
 #' Assigns all possible CHO molecular formulae to each row of input data frame
 #'
 #' MFAssignCHO() assigns all possible molecular formulae to each
@@ -662,41 +752,28 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
 
   records1 <- dplyr::mutate(records1,
-    O_C = O / (C + E), H_C = H / (C + E),
-    theor_mass1 = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
-      Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
-      D * EM2("D") + M * EM2("M") + NH4 * EM2("NH4+") - POE * electron + NOE * electron,
-    theor_mass = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
-      Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
-      D * EM2("D"),
+    O_C = calculate_O_C(O, C, E),
+    H_C = calculate_H_C(H, C, E),
+    theor_mass1 = calculate_theor_mass1(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D, M, NH4, POE, NOE, electron),
+    theor_mass = calculate_theor_mass(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D),
     C = C + E,
-    DBE = C - 0.5 * (H + Cl + Cl37) + 0.5 * (N + N15 + P) + 1,
-    err_ppm = ((Neutral_mass - theor_mass) / Neutral_mass * 10^6),
-    AE_ppm = round(abs((Neutral_mass - theor_mass) / Neutral_mass * 10^6), 2),
-
-    # NM = floor(Exp_mass),
-
-    KM = Exp_mass * (14 / 14.01565), # KMD = NM - KM,
-
-    max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + O + E + S34 + P + Cl + Cl37 + N15),
-    rule_13 = round(actual_LA / max_LA, 1),
-    Senior1 = H, #+ P + N + Cl + Cl37 + N15  ,
-
-    DBEO = DBE - O,
-    max_H = C * 2 + 2, H_test = round(H / max_H, 1),
-    Senior2 = H * Valence("H") + O * Valence("O") + C * Valence("C"),
-    Senior3Atom = C + H + O,
-    Senior3Val = C * Valence("C") + H * Valence("H") + O * Valence("O")
+    DBE = calculate_DBE(C, H, Cl, Cl37, N, N15, P),
+    err_ppm = calculate_err_ppm(Neutral_mass, theor_mass),
+    AE_ppm = calculate_AE_ppm(Neutral_mass, theor_mass),
+    KM = calculate_KM(Exp_mass),
+    max_LA = calculate_max_LA(theor_mass1),
+    actual_LA = calculate_actual_LA(C, E, N, S, O, S34, P, Cl, Cl37, N15),
+    rule_13 = calculate_rule_13(actual_LA, max_LA),
+    Senior1 = H,
+    DBEO = calculate_DBEO(DBE, O),
+    max_H = calculate_max_H(C),
+    H_test = calculate_H_test(H, max_H),
+    Senior2 = calculate_Senior2(H, O, C),
+    Senior3Atom = calculate_Senior3Atom(C, H, O),
+    Senior3Val = calculate_Senior3Val(C, H, O),
+    NM = calculate_nm(Exp_mass, min_def, max_def),
+    KMD = calculate_kmd(Exp_mass, KM, min_def, max_def)
   )
-
-  records1$NM <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
-    records1$NM <- floor(records1$Exp_mass), records1$NM <- round(records1$Exp_mass)
-  ) # New 1/6/20
-
-  records1$KMD <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
-    records1$KMD <- floor(records1$Exp_mass) - records1$KM, records1$KMD <- round(records1$Exp_mass) - records1$KM
-  ) # New 1/6/20
-
 
   records1 <- dplyr::filter(records1, C > 0, H > 0, O >= Omin, H >= D)
   records1 <- unique(records1)
@@ -904,38 +981,36 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
   ### Standard QA steps
   records1 <- dplyr::mutate(records1,
     O_C = O / (C + E), H_C = H / (C + E),
-    theor_mass1 = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") +
-      S * EM2("S") + P * EM2("P31") +
-      Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") +
-      Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
+    theor_mass1 = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
+      Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
       D * EM2("D") + M * EM2("M") + NH4 * EM2("NH4") + POE * electron + NOE * electron,
-    theor_mass = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") +
-      S * EM2("S") + P * EM2("P31") + Fl * EM2("Fl19") +
-      Cl * EM2("Cl35") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") +
-      N15 * EM2("N15H") +
-      D * EM2("D"),
+    theor_mass = calculate_theor_mass(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D),
     C = C + E,
-    DBE = C - 0.5 * (H + Cl + Cl37 + Fl) + 0.5 * (N + N15 + P) + 1,
-    err_ppm = ((Neutral_mass - theor_mass) / Neutral_mass * 10^6),
-    AE_ppm = round(abs((Neutral_mass - theor_mass) / Neutral_mass * 10^6), 2),
-    KM = Exp_mass * (14 / 14.01565), # KMD = NM - KM,
-    max_LA = theor_mass1 / 13, actual_LA = ((C - E) + N + S + O + E + S34 + P + Cl + Cl37 + N15),
-    rule_13 = round(actual_LA / max_LA, 1),
-    Senior1 = H, #+ P + N + Cl + Cl37 + N15  ,
-    DBEO = DBE - O,
-    max_H = C * 2 + 2, H_test = round(H / max_H, 1),
-    Senior2 = H * Valence("H") + O * Valence("O") + C * Valence("C"),
-    Senior3Atom = C + H + O,
-    Senior3Val = C * Valence("C") + H * Valence("H") + O * Valence("O")
+    DBE = calculate_DBE(C, H, Cl, Cl37, N, N15, P, Fl),
+    err_ppm = calculate_err_ppm(Neutral_mass, theor_mass),
+    AE_ppm = calculate_AE_ppm(Neutral_mass, theor_mass),
+    KM = calculate_KM(Exp_mass),
+    max_LA = calculate_max_LA(theor_mass1),
+    actual_LA = calculate_actual_LA(C, E, N, S, O, S34, P, Cl, Cl37, N15),
+    rule_13 = calculate_rule_13(actual_LA, max_LA),
+    Senior1 = H,
+    DBEO = calculate_DBEO(DBE, O),
+    max_H = calculate_max_H(C),
+    H_test = calculate_H_test(H, max_H),
+    Senior2 = calculate_Senior2(H, O, C),
+    Senior3Atom = calculate_Senior3Atom(C, H, O),
+    Senior3Val = calculate_Senior3Val(C, H, O),
+    NM = calculate_nm(Exp_mass, min_def, max_def),
+    KMD = calculate_kmd(Exp_mass, KM, min_def, max_def)
   )
 
-  records1$NM <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
-    records1$NM <- floor(records1$Exp_mass), records1$NM <- round(records1$Exp_mass)
-  ) # New 1/6/20
+  # records1$NM <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
+  #   records1$NM <- floor(records1$Exp_mass), records1$NM <- round(records1$Exp_mass)
+  # ) # New 1/6/20
 
-  records1$KMD <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
-    records1$KMD <- floor(records1$Exp_mass) - records1$KM, records1$KMD <- round(records1$Exp_mass) - records1$KM
-  ) # New 1/6/20
+  # records1$KMD <- ifelse(abs(floor(records1$Exp_mass) - records1$Exp_mass) >= min_def & abs(floor(records1$Exp_mass) - records1$Exp_mass) <= max_def,
+  #   records1$KMD <- floor(records1$Exp_mass) - records1$KM, records1$KMD <- round(records1$Exp_mass) - records1$KM
+  # ) # New 1/6/20
 
 
   # recordssave <- records1
