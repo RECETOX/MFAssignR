@@ -280,10 +280,10 @@ calculate_theor_mass1 <- function(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D
   calculate_theor_mass(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D) + calculate_charge_state_differences(M, NH4, POE, NOE, electron)
 }
 
-calculate_theor_mass <- function(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D) {
+calculate_theor_mass <- function(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D, Br = 0, Br81 = 0, I = 0) {
   EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
     Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
-    D * EM2("D")
+    D * EM2("D") + Br * EM2("Br79") + Br81 * EM2("Br81m") + I * EM2("I127")
 }
 
 calculate_DBE <- function(C, H, Cl, Cl37, N, N15, P, Fl = 0) {
@@ -777,6 +777,8 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
   records1 <- dplyr::filter(records1, C > 0, H > 0, O >= Omin, H >= D)
   records1 <- unique(records1)
+
+  ## these are the cheks for formulas
   records1 <- dplyr::filter(records1, O_C < O_Cmax & H_C <= H_Cmax & H_C > H_Cmin & O_C >= O_Cmin &
 
     DBEO >= DBEOmin & DBEO <= DBEOmax &
@@ -980,10 +982,9 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW = 100, highMW =
 
   ### Standard QA steps
   records1 <- dplyr::mutate(records1,
-    O_C = O / (C + E), H_C = H / (C + E),
-    theor_mass1 = EM2("C") * C + EM2("H") * H + EM2("O") * O + N * EM2("N14") + S * EM2("S") + P * EM2("P31") +
-      Cl * EM2("Cl35") + Fl * EM2("Fl19") + E * EM2("E") + S34 * EM2("S34") + Cl37 * EM2("Cl37m") + N15 * EM2("N15H") +
-      D * EM2("D") + M * EM2("M") + NH4 * EM2("NH4") + POE * electron + NOE * electron,
+    O_C = calculate_O_C(O, C, E),
+    H_C = calculate_H_C(H, C, E),
+    theor_mass1 = calculate_theor_mass1(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D, M, NH4, POE, NOE, electron),
     theor_mass = calculate_theor_mass(C, H, O, N, S, P, Cl, Fl, E, S34, Cl37, N15, D),
     C = C + E,
     DBE = calculate_DBE(C, H, Cl, Cl37, N, N15, P, Fl),
