@@ -47,7 +47,7 @@ create_data_chunks <- function(data1) {
 
   data_chunks <- list()
   for (i in 1:10) {
-    start_idx <- (i - 1) * sect + 1
+    start_idx <- max((i-1)*sect, 1)
     end_idx <- min((i * sect + over), nrow(data1))
     data_chunks[[i]] <- data1[start_idx:end_idx, ]
   }
