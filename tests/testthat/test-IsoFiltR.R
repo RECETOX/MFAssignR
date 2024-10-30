@@ -1,8 +1,14 @@
+update_expected <- function(actual, expected_path) {
+  saveRDS(actual, file = expected_path)
+}
+
 patrick::with_parameters_test_that("IsoFiltR works",
   {
     raw <- read.csv(file.path("test-data", paste0("QC1_1_", toupper(mode), "_500.csv")))
     actual <- IsoFiltR(raw)
-    expected <- readRDS(file.path("test-data", paste0(mode, "_iso.rds")))
+    expected_path <- file.path("test-data", paste0(mode, "_iso.rds"))
+    expected <- readRDS(expected_path)
+
     expect_equal(actual, expected)
   },
   mode = c("pos", "neg")
@@ -20,7 +26,6 @@ test_that("IsoFiltR works on recetox-aplcms output", {
 
 patrick::with_parameters_test_that("filtered_data_is_empty works", {
   expect_equal(filtered_data_is_empty(test_data), expected)
-
   },
   patrick::cases(
     empty = list(test_data=list(content=c()), expected=TRUE),
