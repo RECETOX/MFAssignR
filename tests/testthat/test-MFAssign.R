@@ -15,7 +15,7 @@ load_expected <- function(mode) {
   ))
 }
 
-save_expected <- function(actual, mode) {
+update_expected <- function(actual, mode) {
   paths <- expected_paths(mode)
   saveRDS(actual$Unambig, paths$unambig)
   saveRDS(actual$Ambig, paths$ambig)
