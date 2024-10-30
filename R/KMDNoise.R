@@ -155,6 +155,8 @@ SNplot <- function(df, cut, mass, mass_window = 0.5, window.y = 10) { # plots a 
   SNplot <- ggplot(df, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) +
     geom_segment(aes(color = Index), size = 0.65, alpha = 1) +
     geom_hline(yintercept = cut, linetype = "solid", size = 0.1) +
-    coord_cartesian(xlim = c(mass - mass_window, mass + mass_window), ylim = c(0, cut * window.y))
+    coord_cartesian(xlim = c(mass - mass_window, mass + mass_window), ylim = c(0, cut * window.y))+
+    labs(x = "Mass",
+         y = "Abundance")
   print(SNplot)
 }
