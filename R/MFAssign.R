@@ -2559,6 +2559,8 @@ records <- vector("list")
     records1$category[records1$C13_Abund2 > 0] <- "C13_Abund2"  
     records1$category[records1$S34_Abund > 0] <- "S34_Abund"
     unassigned$category <- "Unassigned_Mass"
+    unassigned$category <- as.factor(unassigned$category)
+    records1$category <- as.factor(records1$category)
 
   MZ<-ggplot2::ggplot() + ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA", color= "category"))+
     ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "C13_mass", xend = "C13_mass", y = 0, yend = "C13_Abund", color= "category"))+
@@ -2574,6 +2576,9 @@ records <- vector("list")
                    legend.text=ggplot2::element_text(face="bold", size = 15),  panel.grid.minor.x=ggplot2::element_blank(),
                    panel.grid.major.x=ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
                    plot.title = ggplot2::element_text(size = 16, face = "bold"))
+
+    records1$category <- NULL
+    unassigned$category <- NULL
 
   Error <- ggplot2::ggplot() + ggplot2::geom_point(data=Unambig, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1/3) +
     ggplot2::geom_point(data=Ambigout, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1/3) +
