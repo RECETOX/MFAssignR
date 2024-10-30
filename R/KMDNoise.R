@@ -137,8 +137,8 @@ KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = 
 #' @param df - dataframe of intensity and ion mass, column 1 should be intensity, column 2 should be mass
 #' @param cut - numeric value of the intensity cut value being investigated
 #' @param mass - numeric value setting a centerpoint to look at the mass spectrum
-#' @param window.x - numeric value setting the +/- range around the mass centerpoint, default is 0.5
-#' @param window.y - numeric value setting the y axis value for the plot, determined by multiplying the cut by this value
+#' @param mass_window - numeric value setting the +/- range around the mass centerpoint, default is 0.5
+#' @param abundance_window - numeric value setting the y axis value for the plot, determined by multiplying the cut by this value
 #'
 #' @return S/N cut colored mass spectrum
 #'
@@ -146,7 +146,7 @@ KMDNoise <- function(df, upper.y = 0.2, lower.y = 0.05, upper.x = NA, lower.x = 
 #'
 #' @import ggplot2
 #' @export
-SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) { # plots a data set displaying the SN cut around a specific mass
+SNplot <- function(df, cut, mass, mass_window = 0.5, abundance_window = 10) { # plots a data set displaying the SN cut around a specific mass
   df <- df[c(2, 1)]
   names(df)[2] <- "mass"
   names(df)[1] <- "Abundance"
@@ -155,6 +155,8 @@ SNplot <- function(df, cut, mass, window.x = 0.5, window.y = 10) { # plots a dat
   SNplot <- ggplot(df, aes_string(x = "mass", xend = "mass", y = 0, yend = "Abundance")) +
     geom_segment(aes(color = Index), size = 0.65, alpha = 1) +
     geom_hline(yintercept = cut, linetype = "solid", size = 0.1) +
-    coord_cartesian(xlim = c(mass - window.x, mass + window.x), ylim = c(0, cut * window.y))
+    coord_cartesian(xlim = c(mass - mass_window, mass + mass_window), ylim = c(0, cut * abundance_window))+
+    labs(x = "Mass",
+         y = "Abundance")
   print(SNplot)
 }
