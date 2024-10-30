@@ -2553,11 +2553,22 @@ records <- vector("list")
   #print(form_palette)
   ###############
 
-  MZ<-ggplot2::ggplot() + ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA"), color = "green")+
-    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "C13_mass", xend = "C13_mass", y = 0, yend = "C13_Abund"), color = "blue")+
-    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "C13_mass2", xend = "C13_mass2", y = 0, yend = "C13_Abund2"), color = "blue")+
-    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "S34_mass", xend = "S34_mass", y = 0, yend = "S34_Abund"), color = "blue")+
-    ggplot2::geom_segment(data=unassigned, size=0.7,ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "RA"), color = "red")+
+  # Set the color mapping
+    records1$category <- "Exp_Mass"
+    records1$category[records1$C13_Abund > 0] <- "C13_Abund"
+    records1$category[records1$C13_Abund2 > 0] <- "C13_Abund2"  
+    records1$category[records1$S34_Abund > 0] <- "S34_Abund"
+    unassigned$category <- "Unassigned_Mass"
+    unassigned$category <- as.factor(unassigned$category)
+    records1$category <- as.factor(records1$category)
+
+  MZ<-ggplot2::ggplot() + ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "Exp_mass", xend = "Exp_mass", y = 0, yend = "RA", color= "category"))+
+    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "C13_mass", xend = "C13_mass", y = 0, yend = "C13_Abund", color= "category"))+
+    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "C13_mass2", xend = "C13_mass2", y = 0, yend = "C13_Abund2", color= "category"))+
+    ggplot2::geom_segment(data=records1, size=0.7,ggplot2::aes_string(x = "S34_mass", xend = "S34_mass", y = 0, yend = "S34_Abund", color= "category"))+
+    ggplot2::geom_segment(data=unassigned, size=0.7,ggplot2::aes_string(x = "mass", xend = "mass", y = 0, yend = "RA", color= "category"))+
+    ggplot2::scale_color_manual(values = c("Exp_Mass" = "green", "C13_Abund" = "purple", "S34_Abund" = "darkblue", "C13_Abund2"="turquoise", "Unassigned_Mass" = "red")) +
+    ggplot2::labs(color = "Assignment")+      
     ggplot2::coord_cartesian(xlim = c(min(rawpeaks$mass), max(rawpeaks$mass)))+
     ggplot2::theme_bw()+ggplot2::labs(x = "Ion Mass", y = "Abundance", title = "Assignment Mass Spectrum", color = "DBE")+
     ggplot2::theme(axis.title=ggplot2::element_text(size = 15, face = "bold"), strip.text=ggplot2::element_text(size=15,face="bold"),
@@ -2565,6 +2576,9 @@ records <- vector("list")
                    legend.text=ggplot2::element_text(face="bold", size = 15),  panel.grid.minor.x=ggplot2::element_blank(),
                    panel.grid.major.x=ggplot2::element_blank(), strip.background = ggplot2::element_blank(),
                    plot.title = ggplot2::element_text(size = 16, face = "bold"))
+
+    records1$category <- NULL
+    unassigned$category <- NULL
 
   Error <- ggplot2::ggplot() + ggplot2::geom_point(data=Unambig, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1/3) +
     ggplot2::geom_point(data=Ambigout, ggplot2::aes_string(x = "Exp_mass", y = "AE_ppm", color = "Tag"), alpha = 1/3) +
