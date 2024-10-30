@@ -57,7 +57,7 @@ patrick::with_parameters_test_that("Selection of the final series works", {
   if (mode == TRUE) {
     expect_equal(nrow(actual), 10)
   } else {
-    expect_equal(nrow(actual), n)  
+    expect_equal(nrow(actual), n)
   }
   expect_equal(actual, expected)
 },
@@ -69,15 +69,26 @@ patrick::with_parameters_test_that("FindRecalSeries function works", {
   expected <- readRDS(file.path("test-data", paste0("findRecalSeries", mode, ".rds")))
   n <- 3
 
-  actual <- FindRecalSeries(df,
-                        global_min = 100,
-                        global_max = 500,
-                        number_of_combinations = 3,
-                        abundance_score_threshold = 100,
-                        peak_distance_threshold = 2,
-                        coverage_threshold = 60,
-                        fill_series = mode)
+  actual <- FindRecalSeries(
+    df,
+    global_min = 100,
+    global_max = 500,
+    number_of_combinations = 3,
+    abundance_score_threshold = 100,
+    peak_distance_threshold = 2,
+    coverage_threshold = 60,
+    fill_series = mode)
   expect_equal(actual, expected)
 },
   mode = c(TRUE, FALSE)
 )
+
+test_that("FindRecalSeriesSimple works", {
+  df <- readRDS("test-data/pos_recallist.rds")
+  actual <- FindRecalSeriesSimple(df)
+
+  expected_path <- file.path("test-data", "expected_FindRecalSeriesSimple.rds")
+  expected <- readRDS(expected_path)
+
+  expect_equal(actual, expected)
+})
