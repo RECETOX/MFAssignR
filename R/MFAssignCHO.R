@@ -1684,6 +1684,7 @@ MFAssignCHO <- function(peaks, isopeaks = "none", ionMode, lowMW=100,highMW=1000
     #print(form_palette)
     ###########
 
+    # Set the color mapping
     records1$category <- "Exp_Mass"
     records1$category[records1$C13_Abund > 0] <- "C13_Abund"
     records1$category[records1$C13_Abund2 > 0] <- "C13_Abund2"  
