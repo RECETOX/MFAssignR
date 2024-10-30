@@ -46,23 +46,24 @@ patrick::with_parameters_test_that("RecalList works",
     unambig <- readRDS(file.path("test-data", paste0(mode, "_cho_unambig.rds")))
 
     actual <- MFAssignR::RecalList(unambig)
+
     expected <- readRDS(expected_path)
 
     actual <- actual %>% dplyr::select(-"Series.Index")
     expected <- expected %>% dplyr::select(-"Series.Index")
     actual_sorted <- dplyr::arrange_at(actual, "Series")
     expected_sorted <- dplyr::arrange_at(expected, "Series")
-    
+
     expect_equal(actual_sorted, expected_sorted)
   },
   mode = c("neg", "pos"),
 )
 
 test_that("Replicate the Recal bug", {
-  unambig <- read.delim("test-data/bug_unambig.tabular")
-  mono <- read.delim("test-data/bug_mono.tabular")
-  iso <- read.delim("test-data/bug_iso.tabular")
-  recallist <- read.delim("test-data/bug_recalseries.tabular")
+  unambig <- read.delim(file.path("test-data", "bug_unambig.tabular"))
+  mono <- read.delim(file.path("test-data", "bug_mono.tabular"))
+  iso <- read.delim(file.path("test-data", "bug_iso.tabular"))
+  recallist <- read.delim(file.path("test-data", "bug_recalseries.tabular"))
 
   actual <- MFAssignR::Recal(
       df = unambig,
@@ -80,7 +81,8 @@ test_that("Replicate the Recal bug", {
       mzRange = 50,
       CalPeak = 150
     )
-    expected <- readRDS("test-data/bug_recal_expected.rds")
+    expected_path <- file.path("test-data", "bug_recal_expected.rds")
+    expected <- readRDS(expected_path)
     expect_equal(actual, expected)
 })
 
@@ -102,7 +104,9 @@ patrick::with_parameters_test_that("Replicate Recal isopeaks error", {
       series5 = recallist$Series[5],
       mzRange = 80
     )
-    expected <- readRDS("test-data/recal_isopeaks.rds")
+    expected_path <- file.path("test-data", "recal_isopeaks.rds")
+
+    expected <- readRDS(expected_path)
 
     expect_equal(actual, expected)
 },
