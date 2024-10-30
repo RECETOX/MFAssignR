@@ -204,6 +204,14 @@ IsoFiltR <- function(
   IsoOutC2_final <- unique(IsoOutC2_final)
   MonoOutC_final <- unique(MonoOutC_final)
 
+  dummy <- data.frame(Exp_mass = -42, Abundance = -42, RT = -42)
+
+  IsoOutC1_final <- rbind(IsoOutC1_final, dummy)
+  IsoOutC2_final <- rbind(IsoOutC2_final, dummy)
+  MonoOutC_final <- rbind(MonoOutC_final, dummy)
+  MonoOutS_final <- rbind(MonoOutS_final, dummy)
+  IsoOutS_final <- rbind(IsoOutS_final, dummy)
+
   IsoOutC1_final$Tag <- "C13"
   IsoOutC2_final$Tag <- "2C13"
   MonoOutC_final$Tag <- "C"
@@ -465,7 +473,7 @@ process_sulfur <- function(raw_data, sulferr, data_end, sulfrat) {
     normalization_factor = 12,
     multiplier = 2,
     pair_thresold = c(-1.990, -2),
-    filter_criteria = c(0.00149, -0.29051, -0.29349, 0.70949, 0.7075)
+    filter_criteria = c(0.00249, -0.29051, -0.29349, 0.70949, 0.7075)
   )
 
   data_end2 <- data_end
