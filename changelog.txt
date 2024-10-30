@@ -1,6 +1,7 @@
 Package Updates
 
 10/30/2024 Version 1.1.2
+ - introduced new function to choose the best recal list [#72](https://github.com/RECETOX/MFAssignR/pull/72)
  - aligned IsoFiltR function with upstream version [#70](https://github.com/RECETOX/MFAssignR/pull/70)
 
 09/12/2024 Version 1.1.1
